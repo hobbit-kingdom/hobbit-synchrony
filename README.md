@@ -4,6 +4,8 @@ Make sure to add file FAKE_BILBOS.EXPORT to the level folder,
 modify ALLUSEDLAYERS.TXT and INTITIAL_LAYERS.TXT by adding "FAKE_BILBOS" line to them 
 and increasing total counter of them at the top by 1 in both files.
 
+Also replace BILBORMCHARANIMS file in you common/charachters folder with the one provided here.
+
 Better method will be released later.
 
 After you've launched the level run Server.exe on your PC. Make sure that you are in the same local network as your friends PC (you can use Radmin VPN or Hamachi to achieve that if you are not on the same network).
