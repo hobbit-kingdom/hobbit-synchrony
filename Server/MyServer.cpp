@@ -16,6 +16,7 @@
 
 vector<float> fakePositions = { -2631.110107, -2831.110107, -2431.110107 };
 vector<float> fakeRotations = { -2.796018124, -2.621485233, -2.446952105 };
+vector<long long> fakeGuids = { 3887403015, 3887403009 , 3887403010 };
 
 
 unordered_map<int, int> idToIndex = { {1111, 0} };
@@ -91,6 +92,7 @@ struct FakeBilbo
 {
 	vector<void*> posx;
 	vector<void*> roty;
+	void* guid;
 
 	bool used = false;
 	vector<void*> anim;
@@ -301,17 +303,58 @@ void MyServer::FindHobbits()
 	for (int i = 0; i < fakePositions.size(); i++)
 	{
 		FakeBilbo fakeBilbo;
+		vector<void*> guid;
+
+		float fakePos = 0;
+		float fakeRot = 0;
+
+		//guid
+
+		data1 = {};
+		data1.type = 4;
+		data1.data.unsigned32 = fakeGuids[i];
+
+		guid = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
+
+		for (auto g : guid)
+		{
+			LPVOID lp = (LPVOID)((char*)g + 0xC);
+
+			if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
+			{
+				LPVOID lp2 = (LPVOID)((char*)g + 0x64);
+
+				fakeBilbo.guid = g;
+				fakePos = read_float_value(lp);
+				fakeRot = read_float_value(lp2);
+
+				cout << "X pos by GUID " << fakePos << '\n';
+				cout << "Y rot by GUID " << fakeRot << '\n';
+
+				string s;
+				std::cout << "Input y and press ENTER if X looks like simillar to xxxx.xx ( 12.23, 155.22, -2456.02) \n";
+				std::cout << "Otherwise press n\n";
+				std::cin >> s;
+
+				if (s == "y")
+					break;
+
+
+			}
+		}
+
+
 		//positions
 		data1 = {};
 		data1.type = 4;
-		data1.data.real32 = fakePositions[i];
+		data1.data.real32 = fakePos;// fakePositions[i];
 
 		fakeBilbo.posx = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
 
 		//rotation
 		data1 = {};
 		data1.type = 4;
-		data1.data.real32 = fakeRotations[i];
+		data1.data.real32 = fakeRot; // fakeRotations[i];
 
 		fakeBilbo.roty = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
 		cout << "Rotations: ";

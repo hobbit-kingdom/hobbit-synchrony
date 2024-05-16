@@ -50,7 +50,7 @@ int main()
 			{
 				float tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
 				client.Frame();
-				if (tim > 300)
+				if (tim > 220)
 				{
 					start = high_resolution_clock::now();
 					client.SendPacket();
