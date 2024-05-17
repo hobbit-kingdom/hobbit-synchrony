@@ -1,4 +1,5 @@
 #include "MyServer.h"
+#include "../PNet/MemoryAccess.h"
 #include <windows.h>
 #include <fstream>
 #include <iostream>
@@ -18,7 +19,8 @@ vector<float> fakePositions = { -2631.110107, -2831.110107, -2431.110107 };
 vector<float> fakeRotations = { -2.796018124, -2.621485233, -2.446952105 };
 vector<long long> fakeGuids = { 3887403015, 3887403009 , 3887403010 };
 
-
+using namespace memoryAccess;
+const UInt32Wrapper OBJECT_ARRAY_PTR = UInt32Wrapper(0x0076F648);
 unordered_map<int, int> idToIndex = { {1111, 0} };
 
 unordered_map<string, int> ipToId = {  };
@@ -92,7 +94,7 @@ struct FakeBilbo
 {
 	vector<void*> posx;
 	vector<void*> roty;
-	void* guid;
+	uint32_t guid;
 
 	bool used = false;
 	vector<void*> anim;
@@ -303,7 +305,7 @@ void MyServer::FindHobbits()
 	for (int i = 0; i < fakePositions.size(); i++)
 	{
 		FakeBilbo fakeBilbo;
-		vector<void*> guid;
+		uint32_t guid;
 
 		float fakePos = 0;
 		float fakeRot = 0;
@@ -314,61 +316,77 @@ void MyServer::FindHobbits()
 		data1.type = 4;
 		data1.data.unsigned32 = fakeGuids[i];
 
-		guid = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
 
-		for (auto g : guid)
+
+		// find all gui address
+		uint32_t arrayStartAddress = MemoryAccess::ReadData((LPVOID)OBJECT_ARRAY_PTR);
+		cout << hex << "OBJECT_ARRAY_PTR: ";
+		cout << arrayStartAddress << endl;
+		for (size_t j = 0xEFEC; j > 0; j -= 0x14)
 		{
-			LPVOID lp = (LPVOID)((char*)g + 0xC);
-
-			if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
+			uint32_t objectAddress = MemoryAccess::ReadData((LPVOID)(arrayStartAddress + j));
+			uint32_t objectGUID = MemoryAccess::ReadData((LPVOID)(objectAddress + 0x8));
+			//cout << objectGUID << endl;
+			if (objectGUID == (uint32_t)fakeGuids[i])
 			{
-				LPVOID lp2 = (LPVOID)((char*)g + 0x64);
-
-				fakeBilbo.guid = g;
-				fakePos = read_float_value(lp);
-				fakeRot = read_float_value(lp2);
-
-				cout << "X pos by GUID " << fakePos << '\n';
-				cout << "Y rot by GUID " << fakeRot << '\n';
-
-				string s;
-				std::cout << "Input y and press ENTER if X looks like simillar to xxxx.xx ( 12.23, 155.22, -2456.02) \n";
-				std::cout << "Otherwise press n\n";
-				std::cin >> s;
-
-				if (s == "y")
-					break;
-
-
+				fakeBilbo.guid = objectAddress + 0x8;
+				cout << "FOUND" << endl;
+				break;
+			}
+			if (objectGUID == 0)
+			{
+				break;
 			}
 		}
+
+		LPVOID lp = (LPVOID)(fakeBilbo.guid + 0xC);
+
+		if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
+		{
+			LPVOID lp2 = (LPVOID)(fakeBilbo.guid + 0x64);
+
+			fakePos = read_float_value(lp);
+			fakeRot = read_float_value(lp2);
+
+			std::cout << "X pos by GUID " << fakePos << '\n';
+			std::cout << "Y rot by GUID " << fakeRot << '\n';
+		}
+
+
 
 
 		//positions
 		data1 = {};
 		data1.type = 4;
-		data1.data.real32 = fakePos;// fakePositions[i];
+		data1.data.real32 = fakePos; //fakePositions[i];
 
 		fakeBilbo.posx = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
 
 		//rotation
 		data1 = {};
 		data1.type = 4;
-		data1.data.real32 = fakeRot; // fakeRotations[i];
+		data1.data.real32 = fakeRot; //fakeRotations[i];
 
 		fakeBilbo.roty = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
-		cout << "Rotations: ";
-		for (auto it : fakeBilbo.roty) cout << it << " ";
-		cout << "\n";
+
 		//animation
 		for (auto ittt : fakeBilbo.posx)
 		{
 			LPVOID lp = (LPVOID)((char*)ittt + 0xC4);
-			if (read_int_value(lp) == 0) fakeBilbo.anim.push_back(lp);
+
+			if (read_int_value(lp) == 0)
+				fakeBilbo.anim.push_back(lp);
 		}
-		if (i == 0) fakeBilbo.used = true;
+
+		//set Server's fake Bilbo
+		if (i == 0)
+		{
+			fakeBilbo.used = true;
+			fakeBilbo.id = 1111;
+		}
 		fakeBilbos.push_back(fakeBilbo);
 	}
+
 	pointerToAnimationOfBilbo = ukazatel_hobbit((LPVOID)0x0075BA3C);
 
 	cout << "Finished finding all the Fake Biblo's on the level\n";

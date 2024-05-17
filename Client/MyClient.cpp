@@ -1,4 +1,5 @@
 #include "MyClient.h"
+#include "../PNet/MemoryAccess.h"
 #include <windows.h>
 #include <fstream>
 #include <iostream>
@@ -8,11 +9,12 @@
 #include <vector>
 #include <unordered_map>
 
+using namespace memoryAccess;
 using namespace std;
 
 struct FakeBilbo
 {
-	void* guid;
+	uint32_t guid;
 	vector<void*> posx;
 	vector<void*> roty;
 
@@ -104,7 +106,12 @@ float yRot = 0;
 vector<FakeBilbo> fakeBilbos;
 
 LPDWORD pointerToAnimationOfBilbo;
+const UInt32Wrapper OBJECT_ARRAY_PTR = UInt32Wrapper(0x0076F648);
 
+MyClient::MyClient()
+{
+	MemoryAccess::setExecutableName("Meridian.exe");
+}
 void MyClient::FindHobbits()
 {
 	DWORD processId = findPidByName("Meridian.exe");
@@ -115,7 +122,7 @@ void MyClient::FindHobbits()
 	for (int i = 0; i < fakePositions.size(); i++)
 	{
 		FakeBilbo fakeBilbo;
-		vector<void*> guid;
+		uint32_t guid;
 
 		float fakePos = 0;
 		float fakeRot = 0;
@@ -126,32 +133,42 @@ void MyClient::FindHobbits()
 		data1.type = 4;
 		data1.data.unsigned32 = fakeGuids[i];
 
-		guid = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
 
-		for (auto g : guid)
+
+		// find all gui address
+		uint32_t arrayStartAddress = MemoryAccess::ReadData((LPVOID)OBJECT_ARRAY_PTR);
+		cout << hex << "OBJECT_ARRAY_PTR: ";
+		cout << arrayStartAddress << endl;
+		for (size_t j = 0xEFEC; j > 0; j -= 0x14)
 		{
-			LPVOID lp = (LPVOID)((char*)g + 0xC);
-
-			if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
+			uint32_t objectAddress = MemoryAccess::ReadData((LPVOID)(arrayStartAddress + j));
+			uint32_t objectGUID = MemoryAccess::ReadData((LPVOID)(objectAddress + 0x8));
+			//cout << objectGUID << endl;
+			if (objectGUID == (uint32_t)fakeGuids[i])
 			{
-				LPVOID lp2 = (LPVOID)((char*)g + 0x64);
-
-				fakeBilbo.guid = g;
-				fakePos = read_float_value(lp);
-				fakeRot = read_float_value(lp2);
-
-				std::cout << "X pos by GUID " << fakePos << '\n';
-				std::cout << "Y rot by GUID " << fakeRot << '\n';
-
-				string s;
-				std::cout << "Input y and press ENTER if X looks like simillar to xxxx.xx ( 12.23, 155.22, -2456.02) \n";
-				std::cout << "Otherwise press n\n";
-				std::cin >> s;
-
-				if (s == "y")
-					break;
+				fakeBilbo.guid = objectAddress + 0x8;
+				cout << "FOUND" << endl;
+				break;
+			}
+			if (objectGUID == 0)
+			{
+				break;
 			}
 		}
+
+		LPVOID lp = (LPVOID)(fakeBilbo.guid + 0xC);
+
+		if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
+		{
+			LPVOID lp2 = (LPVOID)(fakeBilbo.guid + 0x64);
+
+			fakePos = read_float_value(lp);
+			fakeRot = read_float_value(lp2);
+
+			std::cout << "X pos by GUID " << fakePos << '\n';
+			std::cout << "Y rot by GUID " << fakeRot << '\n';
+		}
+		
 
 
 

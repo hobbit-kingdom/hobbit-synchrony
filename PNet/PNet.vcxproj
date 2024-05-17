@@ -126,6 +126,7 @@
     <ClInclude Include="IncludeMe.h" />
     <ClInclude Include="IPEndpoint.h" />
     <ClInclude Include="IPVersion.h" />
+    <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketException.h" />
@@ -141,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="IPEndpoint.cpp" />
+    <ClCompile Include="MemoryAccess.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="PacketManager.cpp" />
