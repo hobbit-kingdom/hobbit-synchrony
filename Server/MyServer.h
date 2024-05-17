@@ -6,6 +6,7 @@ using namespace std;
 class MyServer : public Server
 {
 public:
+	MyServer();
 	void SendPackets();
 	void FindHobbits();
 private:

@@ -105,12 +105,71 @@ float yRot = 0;
 
 vector<FakeBilbo> fakeBilbos;
 
-LPDWORD pointerToAnimationOfBilbo;
+LPDWORD pointerToAnimationOfBilbo = MemoryAccess::ReadData((LPVOID)0x0075BA3C);
 const UInt32Wrapper OBJECT_ARRAY_PTR = UInt32Wrapper(0x0076F648);
 
 MyClient::MyClient()
 {
 	MemoryAccess::setExecutableName("Meridian.exe");
+}
+
+void SetFakeBilbo(uint32_t addressFBilbo)
+{
+	FakeBilbo fakeBilbo;
+
+	float fakePos = 0;
+	float fakeRot = 0;
+
+	data1 = {};
+	data1.type = 4;
+	data1.data.unsigned32 = MemoryAccess::ReadData(LPVOID(addressFBilbo + 0x8));
+
+
+	fakeBilbo.guid = addressFBilbo + 0x8;
+
+	LPVOID lp = (LPVOID)(fakeBilbo.guid + 0xC);
+
+	if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
+	{
+		LPVOID lp2 = (LPVOID)(fakeBilbo.guid + 0x64);
+
+		fakePos = read_float_value(lp);
+		fakeRot = read_float_value(lp2);
+	}
+
+
+
+
+	//positions
+	data1 = {};
+	data1.type = 4;
+	data1.data.real32 = fakePos; //fakePositions[i];
+
+	fakeBilbo.posx = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
+
+	//rotation
+	data1 = {};
+	data1.type = 4;
+	data1.data.real32 = fakeRot; //fakeRotations[i];
+
+	fakeBilbo.roty = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
+
+	//animation
+	for (auto ittt : fakeBilbo.posx)
+	{
+		LPVOID lp = (LPVOID)((char*)ittt + 0xC4);
+
+		if (read_int_value(lp) == 0)
+			fakeBilbo.anim.push_back(lp);
+	}
+
+	//set Server's fake Bilbo
+	if (fakeBilbos.size() == 0)
+	{
+		fakeBilbo.used = true;
+		fakeBilbo.id = 1111;
+	}
+	fakeBilbos.push_back(fakeBilbo);
 }
 void MyClient::FindHobbits()
 {
@@ -119,35 +178,19 @@ void MyClient::FindHobbits()
 
 	xPointer = ukazatel_hobbit((LPVOID)0x0075BA3C);
 
-	for (int i = 0; i < fakePositions.size(); i++)
+	uint32_t arrayStartAddress = MemoryAccess::ReadData((LPVOID)OBJECT_ARRAY_PTR);
+	for (size_t i = 0xEFEC; i > 0; i -= 0x14)
 	{
-		FakeBilbo fakeBilbo;
-		uint32_t guid;
+		uint32_t objectAddress = MemoryAccess::ReadData((LPVOID)(arrayStartAddress + i));
+		uint32_t objectGUID = MemoryAccess::ReadData((LPVOID)(objectAddress + 0x8));
+		//cout << objectGUID << endl;
 
-		float fakePos = 0;
-		float fakeRot = 0;
-
-		//guid
-
-		data1 = {};
-		data1.type = 4;
-		data1.data.unsigned32 = fakeGuids[i];
-
-
-
-		// find all gui address
-		uint32_t arrayStartAddress = MemoryAccess::ReadData((LPVOID)OBJECT_ARRAY_PTR);
-		cout << hex << "OBJECT_ARRAY_PTR: ";
-		cout << arrayStartAddress << endl;
-		for (size_t j = 0xEFEC; j > 0; j -= 0x14)
+		for (int j = 0; j < fakePositions.size(); j++)
 		{
-			uint32_t objectAddress = MemoryAccess::ReadData((LPVOID)(arrayStartAddress + j));
-			uint32_t objectGUID = MemoryAccess::ReadData((LPVOID)(objectAddress + 0x8));
-			//cout << objectGUID << endl;
-			if (objectGUID == (uint32_t)fakeGuids[i])
+			if (objectGUID == (uint32_t)fakeGuids[j])
 			{
-				fakeBilbo.guid = objectAddress + 0x8;
-				cout << "FOUND" << endl;
+				cout << "FOUND MODEL" << endl;
+				SetFakeBilbo(objectAddress);
 				break;
 			}
 			if (objectGUID == 0)
@@ -155,57 +198,7 @@ void MyClient::FindHobbits()
 				break;
 			}
 		}
-
-		LPVOID lp = (LPVOID)(fakeBilbo.guid + 0xC);
-
-		if (read_float_value(lp) > 1 || read_float_value(lp) < -1)
-		{
-			LPVOID lp2 = (LPVOID)(fakeBilbo.guid + 0x64);
-
-			fakePos = read_float_value(lp);
-			fakeRot = read_float_value(lp2);
-
-			std::cout << "X pos by GUID " << fakePos << '\n';
-			std::cout << "Y rot by GUID " << fakeRot << '\n';
-		}
-		
-
-
-
-		//positions
-		data1 = {};
-		data1.type = 4;
-		data1.data.real32 = fakePos; //fakePositions[i];
-
-		fakeBilbo.posx = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
-
-		//rotation
-		data1 = {};
-		data1.type = 4;
-		data1.data.real32 = fakeRot; //fakeRotations[i];
-
-		fakeBilbo.roty = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
-
-		//animation
-		for (auto ittt : fakeBilbo.posx)
-		{
-			LPVOID lp = (LPVOID)((char*)ittt + 0xC4);
-
-			if (read_int_value(lp) == 0)
-				fakeBilbo.anim.push_back(lp);
-		}
-
-		//set Server's fake Bilbo
-		if (i == 0)
-		{
-			fakeBilbo.used = true;
-			fakeBilbo.id = 1111;
-		}
-		fakeBilbos.push_back(fakeBilbo);
 	}
-
-	pointerToAnimationOfBilbo = ukazatel_hobbit((LPVOID)0x0075BA3C);
-
 
 	cout << "OK, finished founding objects. This process must've been run after a level is loaded.\n";
 }
@@ -327,12 +320,10 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 
 	return true;
 }
-
 void MyClient::OnConnect()
 {
 	std::cout << "Successfully connected to the server!" << std::endl;
 }
-
 void MyClient::SendPacket() {
 	if (myID == 0) return;
 

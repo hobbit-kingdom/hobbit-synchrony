@@ -289,6 +289,18 @@ namespace memoryAccess {
 		static DWORD readProcessID(const char* name);
 		static DWORD readProcessID();
 
+		static std::vector<uint8_t> ReadData(LPVOID Address, size_t numberOfBytes) {
+			std::vector<uint8_t> data(numberOfBytes);
+			HANDLE Process = readProcess();
+
+			if (!ReadProcessMemory(Process, Address, data.data(), numberOfBytes, NULL)) {
+				// If reading the data from memory fails, clear the data vector
+				data.clear();
+			}
+
+			CloseHandle(Process);
+			return data;
+		}
 		static UInt32Wrapper ReadData(LPVOID Address)
 		{
 			uint32_t data = 0;
@@ -369,5 +381,3 @@ namespace memoryAccess {
 		private:
 	};
 }
-
-
