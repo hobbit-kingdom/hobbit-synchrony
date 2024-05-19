@@ -6,6 +6,7 @@ class MyServer : public Server
 public:
 	MyServer();
 	void SendPackets();
+	void Update();
 private:
 	void OnConnect(TCPConnection& newConnection) override;
 	void OnDisconnect(TCPConnection& lostConnection, std::string reason) override;

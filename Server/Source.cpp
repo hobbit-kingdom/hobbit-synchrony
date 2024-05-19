@@ -16,6 +16,7 @@ int main()
 		{
 			while (true)
 			{
+				server.Update();
 				server.Frame();
 				float tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
 				if (tim > 220)

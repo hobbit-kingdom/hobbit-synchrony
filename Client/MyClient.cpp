@@ -11,18 +11,16 @@
 #include <vector>
 #include <unordered_map>
 #include <iomanip>
+
 using namespace std;
-
-
-
 
 int myID = 0;
 
 unordered_map<int, int> idToIndex = { {1111, 0} };
 unordered_map<string, int> ipToId = {  };
 
-LPDWORD xPointer;
-LPDWORD pointerToAnimationOfBilbo;
+LPVOID xPointer;
+LPVOID pointerToAnimationOfBilbo;
 
 
 MyClient::MyClient()
@@ -36,10 +34,36 @@ MyClient::MyClient()
 
 	//setup player
 	xPointer = MemoryAccess::readData(LPVOID(0x0075BA3C));
-	pointerToAnimationOfBilbo = MemoryAccess::readData((LPVOID)0x0075BA3C);
+
+	//calculating the animation address
+	pointerToAnimationOfBilbo = LPVOID(0x560 + uint32_t(MemoryAccess::readData(LPVOID(0x0075BA3C))));
+	pointerToAnimationOfBilbo = LPVOID(0x8 + uint32_t(MemoryAccess::readData(pointerToAnimationOfBilbo)));
 	//find all playerCharacters in level
 
-	PlayerCharacter::findHobbits();
+	PlayerCharacter::OpenNewLevel();
+}
+void MyClient::SendPacket() {
+	if (myID == 0) return;
+
+	uint32_t uintPosX = MemoryAccess::readData(LPVOID(0x7C4 + uint32_t(xPointer)));
+	uint32_t uintPosY = MemoryAccess::readData(LPVOID(0x7C8 + uint32_t(xPointer)));
+	uint32_t uintPosZ = MemoryAccess::readData(LPVOID(0x7CC + uint32_t(xPointer)));
+	uint32_t uintRotY = MemoryAccess::readData(LPVOID(0x7AC + uint32_t(xPointer)));
+	uint32_t animBilbo = MemoryAccess::readData(pointerToAnimationOfBilbo);
+
+	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+
+	*myLocation << 7 << 0 << myID << uintPosX << uintPosY << uintPosZ << uintRotY << animBilbo;
+
+	connection.pm_outgoing.Append(myLocation);
+}
+void MyClient::Update()
+{
+	PlayerCharacter::checkUpdateLevel();
+}
+void MyClient::OnConnect()
+{
+	std::cout << "Successfully connected to the server!" << std::endl;
 }
 
 bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
@@ -91,7 +115,7 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 			*packet >> index;
 
 			idToIndex.erase(id);
-			
+
 			PlayerCharacter::playerCharacters[index].setIsUsed(false);
 			PlayerCharacter::playerCharacters[index].setId(0);
 
@@ -101,21 +125,21 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 
 		if (type == 0)
 		{
-			cout << "received\n";
-
+			cout << "Received\n";
 			cout << arraySize << " " << type << " " << id << " ";
+			cout << endl;
 
 			cout << "\033[93m";
 			cout << "Recieve Packet" << endl;
 			cout << string(20, '~') << endl;
-		
+
 
 			// set x position
 			uint32_t element = 0;
 			*packet >> element;
 			PlayerCharacter::playerCharacters[idToIndex[id]].setPositionX(UInt32Wrapper(element));
 			cout << "Xpos: " << setw(10) << float(UInt32Wrapper(element)) << "| ";
-			
+
 			// set y position
 			*packet >> element;
 			PlayerCharacter::playerCharacters[idToIndex[id]].setPositionY(UInt32Wrapper(element));
@@ -152,38 +176,4 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 
 	return true;
 }
-void MyClient::OnConnect()
-{
-	std::cout << "Successfully connected to the server!" << std::endl;
-}
-void MyClient::SendPacket() {
-	if (myID == 0) return;
 
-	uint32_t uintPosX = MemoryAccess::readData(LPVOID((xPointer + 497)));
-	uint32_t uintPosY = MemoryAccess::readData(LPVOID((xPointer + 498)));
-	uint32_t uintPosZ = MemoryAccess::readData(LPVOID((xPointer + 499)));
-	uint32_t uintRotY = MemoryAccess::readData(LPVOID((xPointer + 491)));
-	int animBilbo = read_int_value(ukazatel_hobbit(pointerToAnimationOfBilbo + 344) + 2);
-
-
-	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-
-	cout << "\033[94m";
-	cout << "Sending Packet" << endl;
-	cout << string(20, '=');
-	cout << "Xpos: " << setw(10) << float(UInt32Wrapper(uintPosX));
-	cout << "Ypos: " << setw(10) << float(UInt32Wrapper(uintPosY));
-	cout << "Xpos: " << setw(10) << float(UInt32Wrapper(uintPosZ));
-
-	cout << endl;
-
-	cout << "Yrot: " << setw(10) << float(UInt32Wrapper(uintRotY));
-	cout << "Anim: " << setw(10) << int(UInt32Wrapper(animBilbo));
-	cout << string(20, '=');
-	cout << "\033[0m";
-	cout << endl;
-	
-	*myLocation << 7 << 0 << myID << uintPosX << uintPosY << uintPosZ << uintRotY << animBilbo;
-
-	connection.pm_outgoing.Append(myLocation);
-}

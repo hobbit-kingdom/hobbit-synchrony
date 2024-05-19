@@ -19,14 +19,13 @@ using namespace std;
 //  2 - add newplayer to hashmaps
 //  3 - remove player from hashmaps
 
-const size_t MAX_PLAYERS = 3;	// number of players on one server
 
 unordered_map<int, int> idToIndex = { {1111, 0} };
 unordered_map<string, int> ipToId = {  };
 
 
-LPDWORD xPointer = MemoryAccess::readData(LPVOID(0x0075BA3C));
-LPDWORD pointerToAnimationOfBilbo = MemoryAccess::readData((LPVOID)0x0075BA3C);
+LPVOID xPointer = MemoryAccess::readData(LPVOID(0x0075BA3C));
+LPVOID pointerToAnimationOfBilbo = MemoryAccess::readData((LPVOID)0x0075BA3C);
 
 MyServer::MyServer()
 {
@@ -38,9 +37,111 @@ MyServer::MyServer()
 	MemoryAccess::setExecutableName("Meridian.exe");
 
 	xPointer = MemoryAccess::readData(LPVOID(0x0075BA3C));
-	pointerToAnimationOfBilbo = MemoryAccess::readData((LPVOID)0x0075BA3C);
-	PlayerCharacter::findHobbits();
+
+	//calculating the animation address
+	pointerToAnimationOfBilbo = LPVOID(0x560 + uint32_t(MemoryAccess::readData(LPVOID(0x0075BA3C))));
+	pointerToAnimationOfBilbo = LPVOID(0x8 + uint32_t(MemoryAccess::readData(pointerToAnimationOfBilbo)));
+	PlayerCharacter::OpenNewLevel();
 }
+void MyServer::SendPackets()
+{
+	uint32_t uintPosX = MemoryAccess::readData(LPVOID(0x7C4 + uint32_t(xPointer)));
+	uint32_t uintPosY = MemoryAccess::readData(LPVOID(0x7C8 + uint32_t(xPointer)));
+	uint32_t uintPosZ = MemoryAccess::readData(LPVOID(0x7CC + uint32_t(xPointer)));
+	uint32_t uintRotY = MemoryAccess::readData(LPVOID(0x7AC + uint32_t(xPointer)));
+	uint32_t animBilbo = MemoryAccess::readData(pointerToAnimationOfBilbo);
+
+	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+
+	*myLocation << 7 << 0 << 1111 << uintPosX << uintPosY << uintPosZ << uintRotY << animBilbo;
+
+	for (auto& connection : connections)
+	{
+		connection.pm_outgoing.Append(myLocation);
+	}
+}
+void MyServer::Update()
+{
+	PlayerCharacter::checkUpdateLevel();
+}
+void MyServer::OnConnect(TCPConnection& newConnection)
+{
+	std::cout << newConnection.ToString() << " - New connection accepted." << std::endl;
+
+	//number of connections one less then max players
+	if (connections.size() > PlayerCharacter::MAX_PLAYERS - 1)
+	{
+		std::cout << "New player has connected but we kick him since the server is full\n";
+		newConnection.Close();
+		return;
+	}
+
+	for (int i = 0; i < PlayerCharacter::playerCharacters.size(); i++)
+	{
+		if (!PlayerCharacter::playerCharacters[i].getIsUsed())
+		{
+			srand(time(NULL));
+			PlayerCharacter::playerCharacters[i].setIsUsed(true);
+			PlayerCharacter::playerCharacters[i].setRandId();
+
+			std::cout << "Assigned " << PlayerCharacter::playerCharacters[i].getId() << " " << "index " << i << '\n';
+
+			//sending to a new player a packet with his id
+			std::shared_ptr<Packet> assignId = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+			*assignId << 3 << 4 << PlayerCharacter::playerCharacters[i].getId() << i;
+			newConnection.pm_outgoing.Append(assignId);
+
+			//creating a packet to map a new player to existing player
+			std::shared_ptr<Packet> mapNewPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+
+			idToIndex[PlayerCharacter::playerCharacters[i].getId()] = i;
+			ipToId[newConnection.ToString()] = PlayerCharacter::playerCharacters[i].getId();
+
+			//[explain]
+			// 3? 2? playerID playerNum
+			*mapNewPlayer << 3 << 2 << PlayerCharacter::playerCharacters[i].getId() << i;
+
+			//[explain]
+			for (auto& connection : connections)
+			{
+				if (&connection == &newConnection)
+					continue;
+
+				connection.pm_outgoing.Append(mapNewPlayer);
+			}
+
+			return;
+		}
+	}
+
+}
+void MyServer::OnDisconnect(TCPConnection& lostConnection, std::string reason)
+{
+	std::cout << "[" << reason << "] Connection lost: " << lostConnection.ToString() << "." << std::endl;
+
+	//if someone is running 2 clients from 1 pc ( basically ip adresses is the same ) some troubles may occure
+	//since we delete the ip adress from hastables of everyone else as well
+	std::shared_ptr<Packet> removeDisconnectedPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+
+	int playerId = ipToId[lostConnection.ToString()];
+	int ind = idToIndex[playerId];
+
+	//[explain]
+	*removeDisconnectedPlayer << 2 << 3 << playerId << ind;
+
+	//this fake bilbo is now free and available to use for someone else
+	PlayerCharacter::playerCharacters[ind].setIsUsed(false);
+	PlayerCharacter::playerCharacters[ind].setId(0);
+
+	for (auto& connection : connections)
+	{
+		if (&connection == &lostConnection)
+			continue;
+
+		connection.pm_outgoing.Append(removeDisconnectedPlayer);
+	}
+}
+
 bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 {
 	switch (packet->GetPacketType())
@@ -65,6 +166,7 @@ bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 		{
 			cout << "Received\n";
 			cout << arraySize << " " << type << " " << id << " ";
+			cout << endl;
 
 			cout << "\033[93m";
 			cout << "Recieve Packet" << endl;
@@ -138,99 +240,3 @@ bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 	return true;
 }
 
-void MyServer::OnConnect(TCPConnection& newConnection)
-{
-	std::cout << newConnection.ToString() << " - New connection accepted." << std::endl;
-
-	//number of connections one less then max players
-	if (connections.size() > MAX_PLAYERS - 1)
-	{
-		std::cout << "New player has connected but we kick him since the server is full\n";
-		newConnection.Close();
-		return;
-	}
-
-	for (int i = 0; i < PlayerCharacter::playerCharacters.size(); i++)
-	{
-		if (!PlayerCharacter::playerCharacters[i].getIsUsed())
-		{
-			srand(time(NULL));
-			PlayerCharacter::playerCharacters[i].setIsUsed(true);
-			PlayerCharacter::playerCharacters[i].setRandId();
-
-			std::cout << "Assigned " << PlayerCharacter::playerCharacters[i].getId() << " " << "index " << i << '\n';
-
-			//sending to a new player a packet with his id
-			std::shared_ptr<Packet> assignId = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-			*assignId << 3 << 4 << PlayerCharacter::playerCharacters[i].getId() << i;
-			newConnection.pm_outgoing.Append(assignId);
-
-			//creating a packet to map a new player to existing player
-			std::shared_ptr<Packet> mapNewPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-
-			idToIndex[PlayerCharacter::playerCharacters[i].getId()] = i;
-			ipToId[newConnection.ToString()] = PlayerCharacter::playerCharacters[i].getId();
-
-			//[explain]
-			// 3? 2? playerID playerNum
-			*mapNewPlayer << 3 << 2 << PlayerCharacter::playerCharacters[i].getId() << i;
-
-			//[explain]
-			for (auto& connection : connections)
-			{
-				if (&connection == &newConnection)
-					continue;
-
-				connection.pm_outgoing.Append(mapNewPlayer);
-			}
-
-			return;
-		}
-	}
-
-}
-void MyServer::OnDisconnect(TCPConnection& lostConnection, std::string reason)
-{
-	std::cout << "[" << reason << "] Connection lost: " << lostConnection.ToString() << "." << std::endl;
-
-	//if someone is running 2 clients from 1 pc ( basically ip adresses is the same ) some troubles may occure
-	//since we delete the ip adress from hastables of everyone else as well
-	std::shared_ptr<Packet> removeDisconnectedPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-
-	int playerId = ipToId[lostConnection.ToString()];
-	int ind = idToIndex[playerId];
-
-	//[explain]
-	*removeDisconnectedPlayer << 2 << 3 << playerId << ind;
-
-	//this fake bilbo is now free and available to use for someone else
-	PlayerCharacter::playerCharacters[ind].setIsUsed(false);
-	PlayerCharacter::playerCharacters[ind].setId(0);
-
-	for (auto& connection : connections)
-	{
-		if (&connection == &lostConnection)
-			continue;
-
-		connection.pm_outgoing.Append(removeDisconnectedPlayer);
-	}
-}
-
-void MyServer::SendPackets()
-{
-	uint32_t uintPosX = MemoryAccess::readData(LPVOID((xPointer + 497)));
-	uint32_t uintPosY = MemoryAccess::readData(LPVOID((xPointer + 498)));
-	uint32_t uintPosZ = MemoryAccess::readData(LPVOID((xPointer + 499)));
-	uint32_t uintRotY = MemoryAccess::readData(LPVOID((xPointer + 491)));
-
-	//[why?]
-	int animBilbo = read_int_value(ukazatel_hobbit(pointerToAnimationOfBilbo + 344) + 2);
-
-	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-	*myLocation << 7 << 0 << 1111 << uintPosX << uintPosY << uintPosZ << uintRotY << animBilbo;
-
-	for (auto& connection : connections)
-	{
-		connection.pm_outgoing.Append(myLocation);
-	}
-}

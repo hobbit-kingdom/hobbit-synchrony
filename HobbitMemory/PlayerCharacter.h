@@ -6,15 +6,18 @@ class PlayerCharacter : public NPC
 public:
 	// stores all NPCrgeom for players
 	static std::vector<PlayerCharacter> playerCharacters;
+	static const size_t MAX_PLAYERS = 3;	// number of players on one server
 
 	//constants 
-	static const std::vector<float> fakePositions;
-	static const std::vector<float> fakeRotations;
-	static const std::vector<long long> fakeGuids;
+
+	static const std::vector<uint32_t> fakeGuids;
 
 	// Constructors
 	//PlayerCharacter(UInt32Wrapper GUIDToFind) : NPC(UInt32Wrapper(GUIDToFind)) {}
-	PlayerCharacter(LPVOID addresOfNPC) : NPC(addresOfNPC) {}
+	PlayerCharacter(LPVOID addresOfNPC) : NPC(addresOfNPC) 
+	{
+		 
+	}
 
 	// isUsed
 	bool getIsUsed() { return isUsed; }
@@ -28,8 +31,8 @@ public:
 	// find all playerCharacters
 	static void findHobbits()
 	{
-		LPVOID arrayStartAddress = MemoryAccess::readData(LPVOID(0x0076F648));
-		for (int i = 0; i < fakePositions.size(); i++)
+		LPVOID arrayStartAddress = MemoryAccess::readData(LPVOID(LPVOID(0x0076F648)));
+		for (int i = 0; i < fakeGuids.size(); i++)
 		{
 			LPVOID addressFBilbo = MemoryAccess::findDataInStackHobbit(arrayStartAddress, 0xEFEC, 0x14, fakeGuids[i]);
 			PlayerCharacter fakeBilbo = PlayerCharacter(addressFBilbo);
@@ -45,13 +48,39 @@ public:
 		}
 	}
 
+	static void OpenNewLevel()
+	{
+		playerCharacters.clear();
+		findHobbits();
+	}
+	static void checkUpdateLevel()
+	{
+		static uint32_t isLoadingLayers;
+		static uint32_t readLoadLayers;
+		readLoadLayers = MemoryAccess::readData(LPVOID(0x00760864));
+		if (isLoadingLayers != readLoadLayers)
+		{
+			if (!readLoadLayers)
+			{
+				OpenNewLevel();
+			}
+
+			isLoadingLayers = readLoadLayers;
+
+		}
+	}
+	static int getLevel()
+	{
+		return MemoryAccess::readData(LPVOID(0x762b5c));
+	}
+
 private:
+	
 	bool isUsed = false;
 	int id = 0;
 };
 
 
-const std::vector<float> PlayerCharacter::fakePositions = { -2631.110107, -2831.110107, -2431.110107 };
-const std::vector<float> PlayerCharacter::fakeRotations = { -2.796018124, -2.621485233, -2.446952105 };
-const std::vector<long long> PlayerCharacter::fakeGuids = { 3887403015, 3887403009 , 3887403010 };
+const std::vector<uint32_t> PlayerCharacter::fakeGuids = {3887403015, 3887403009, 3887403010};
 std::vector<PlayerCharacter> PlayerCharacter::playerCharacters;
+
