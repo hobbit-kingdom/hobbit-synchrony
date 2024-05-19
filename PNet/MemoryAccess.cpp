@@ -1,7 +1,6 @@
 #include "MemoryAccess.h"
 
 
-namespace memoryAccess {
 
 	std::string MemoryAccess::getExecutableName() {
 		return executableName;
@@ -12,22 +11,32 @@ namespace memoryAccess {
 
 	HANDLE MemoryAccess::readProcess(const char* processName)
 	{
-		DWORD pid = 0;     //переменная айди процесса
+		DWORD pid = 0;
 		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		if (snapshot == INVALID_HANDLE_VALUE) {
+			return nullptr; // Failed to create snapshot
+		}
+
 		PROCESSENTRY32 pe32;
 		pe32.dwSize = sizeof(PROCESSENTRY32);
+
 		if (Process32First(snapshot, &pe32)) {
-			while (Process32Next(snapshot, &pe32)) { //ищет айди процесса
+			do {
 				if (strcmp(pe32.szExeFile, processName) == 0) {
-					pid = pe32.th32ProcessID; //переменная айди процесса
+					pid = pe32.th32ProcessID;
 					break;
 				}
-			}
+			} while (Process32Next(snapshot, &pe32)); // Continue until process is found or list ends
 		}
+
 		CloseHandle(snapshot);
-		DWORD Prava = PROCESS_ALL_ACCESS; //это права доступа
-		HANDLE Process = OpenProcess(Prava, FALSE, pid); //числовое значение - это айди процесса в диспетчере задач
-		return Process;
+
+		if (pid == 0) {
+			return nullptr; // Process not found
+		}
+
+		HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+		return processHandle; // This may return NULL if OpenProcess fails
 	}
 	HANDLE MemoryAccess::readProcess()
 	{
@@ -191,4 +200,3 @@ namespace memoryAccess {
 		q.baseQueriedPtr = 0;
 		return q;
 	}
-}

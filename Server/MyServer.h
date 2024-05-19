@@ -1,14 +1,11 @@
 #pragma once
 #include <PNet/IncludeMe.h>
 
-using namespace std;
-
 class MyServer : public Server
 {
 public:
 	MyServer();
 	void SendPackets();
-	void FindHobbits();
 private:
 	void OnConnect(TCPConnection& newConnection) override;
 	void OnDisconnect(TCPConnection& lostConnection, std::string reason) override;

@@ -10,251 +10,10 @@
 
 #include <cstring> // for std::memcpy
 #include <type_traits> // for std::enable_if and std::is_arithmetic
-
-class UInt32Wrapper {
-public:
-	// Constructor
-	 // Default constructor
-	UInt32Wrapper() : data(0) {}
-
-	// Constructor taking any type and storing it in data
-	template<typename TYPE>
-	explicit UInt32Wrapper(TYPE value) : data(static_cast<uint32_t>(value)) {}
-
-	// Templated function for reinterpretation of byte representation as other types
-	template<typename T>
-	static T reinterpret_as(const uint32_t& data) {
-		static_assert(sizeof(T) == sizeof(uint32_t), "Size mismatch between types");
-		T result;
-		std::memcpy(&result, &data, sizeof(T));
-		return result;
-	}
-
-	// Templated conversion operator calling the reinterpretation function
-	template<typename T>
-	operator T() const {
-		return reinterpret_as<T>(data);
-	}
-
-	// Helper function for arithmetic operations
-	template<typename T, typename Func>
-	UInt32Wrapper performArithmeticOperation(T rhs, Func operation) const {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		T result = operation(dataAsT, rhs);
-		uint32_t resultAsUint32;
-		std::memcpy(&resultAsUint32, &result, sizeof(uint32_t));
-		return UInt32Wrapper(resultAsUint32);
-	}
-
-	// Operator overloads for arithmetic operations
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper operator+(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x += y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper operator-(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x -= y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper operator*(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x *= y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper operator/(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x /= y; });
-	}
+#include "../HobbitMemory/UINT32Wrapper.h"
 
 
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper& operator+=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT += rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint32_t));
-		return *this;
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper& operator-=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT -= rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint32_t));
-		return *this;
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper& operator*=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT *= rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint32_t));
-		return *this;
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt32Wrapper& operator/=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT /= rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint32_t));
-		return *this;
-	}
-
-
-	// Operator overloads for arithmetic operations
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	bool operator==(T rhs) const {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		return (dataAsT == rhs);
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	bool operator!=(T rhs) const {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		return dataAsT != rhs;
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, const UInt32Wrapper& wrapper) {
-		os << wrapper.data;
-		return os;
-	}
-private:
-	uint32_t data; // Stored uint32_t value
-};
-class UInt64Wrapper {
-public:
-	// Constructor
-	// Default constructor
-	UInt64Wrapper() : data(0) {}
-
-	// Constructor taking any type and storing it in data
-	template<typename TYPE>
-	explicit UInt64Wrapper(TYPE value) : data(static_cast<uint64_t>(value)) {}
-
-	// Templated function for reinterpretation of byte representation as other types
-	template<typename T>
-	static T reinterpret_as(const uint64_t& data) {
-		static_assert(sizeof(T) == sizeof(uint64_t), "Size mismatch between types");
-		T result;
-		std::memcpy(&result, &data, sizeof(T));
-		return result;
-	}
-
-	// Templated conversion operator calling the reinterpretation function
-	template<typename T>
-	operator T() const {
-		return reinterpret_as<T>(data);
-	}
-
-	// Helper function for arithmetic operations
-	template<typename T, typename Func>
-	UInt64Wrapper performArithmeticOperation(T rhs, Func operation) const {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		T result = operation(dataAsT, rhs);
-		uint64_t resultAsUint64;
-		std::memcpy(&resultAsUint64, &result, sizeof(uint64_t));
-		return UInt64Wrapper(resultAsUint64);
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper& operator=(T rhs) {
-		data = static_cast<uint64_t>(rhs);
-		return *this;
-	}
-
-	// Operator overloads for arithmetic operations
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper operator+(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x += y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper operator-(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x -= y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper operator*(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x *= y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper operator/(T rhs) const {
-		return performArithmeticOperation(rhs, [](T x, T y) { return x /= y; });
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper& operator+=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT += rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint64_t));
-		return *this;
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper& operator-=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT -= rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint64_t));
-		return *this;
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper& operator*=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT *= rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint64_t));
-		return *this;
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	UInt64Wrapper& operator/=(T rhs) {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		dataAsT /= rhs;
-		std::memcpy(&data, &dataAsT, sizeof(uint64_t));
-		return *this;
-	}
-
-	// Operator overloads for comparison operations
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	bool operator==(T rhs) const {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		return (dataAsT == rhs);
-	}
-
-	template<typename T, typename = typename std::enable_if<std::is_arithmetic<T>::value>::type>
-	bool operator!=(T rhs) const {
-		T dataAsT;
-		std::memcpy(&dataAsT, &data, sizeof(T));
-		return dataAsT != rhs;
-	}
-
-	friend std::ostream& operator<<(std::ostream& os, const UInt64Wrapper& wrapper) {
-		os << wrapper.data;
-		return os;
-	}
-private:
-	uint64_t data; // Stored uint64_t value
-};
-
-
-
-
-namespace memoryAccess {
-	using PROCESS = HANDLE;
+using PROCESS = HANDLE;
 
 	enum
 	{
@@ -289,8 +48,9 @@ namespace memoryAccess {
 		static DWORD readProcessID(const char* name);
 		static DWORD readProcessID();
 
-		static std::vector<uint8_t> ReadData(LPVOID Address, size_t numberOfBytes) {
-			std::vector<uint8_t> data(numberOfBytes);
+		static std::vector<uint32_t> readData(LPVOID Address, size_t numberOfDWords) {
+			size_t numberOfBytes = numberOfDWords * sizeof(uint32_t);
+			std::vector<uint32_t> data(numberOfDWords);
 			HANDLE Process = readProcess();
 
 			if (!ReadProcessMemory(Process, Address, data.data(), numberOfBytes, NULL)) {
@@ -301,7 +61,7 @@ namespace memoryAccess {
 			CloseHandle(Process);
 			return data;
 		}
-		static UInt32Wrapper ReadData(LPVOID Address)
+		static UInt32Wrapper readData(LPVOID Address)
 		{
 			uint32_t data = 0;
 			HANDLE Process = readProcess();
@@ -312,21 +72,35 @@ namespace memoryAccess {
 			CloseHandle(Process);
 			return UInt32Wrapper(data);
 		}
-		static UInt64Wrapper ReadData64(LPVOID Address)
-		{
-			uint64_t data = 0;
-			HANDLE Process = readProcess();
-			if (!ReadProcessMemory(Process, Address, &data, sizeof(data), NULL)) { // Reading the data from memory
 
-				data = 0;
+		static LPVOID findDataInStackHobbit(LPVOID beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t dataToFind) {
+			HANDLE Process = readProcess();
+			if (!Process) {
+				return nullptr;
 			}
+
+			// Loop through the stack memory
+			for (size_t offset = stackSize; offset > 0; offset -= jumpSize) {
+				uint32_t currentData = 0;
+				LPVOID currentAddress = LPVOID(uint32_t(beginStackAddress) + offset);
+
+				if (ReadProcessMemory(Process, currentAddress, &currentData, sizeof(currentData), NULL)) {
+					LPVOID guidAddress = LPVOID(uint32_t(currentData) + 0x8);
+					if (ReadProcessMemory(Process, guidAddress, &currentData, sizeof(currentData), NULL) && currentData == dataToFind) {
+						CloseHandle(Process);
+						return guidAddress;
+					}
+				}
+				
+			}
+
 			CloseHandle(Process);
-			return UInt64Wrapper(data);
+			return nullptr; // Return nullptr if dataToFind is not found in the stack range
 		}
 
 		// templates
 		template<typename T>
-		static T WriteDataSwitcher(LPVOID Address, T newData, T initialData)
+		static T writeDataSwitcher(LPVOID Address, T newData, T initialData)
 		{
 			T data;  // Variable to store the data read from memory
 			HANDLE Process = readProcess();
@@ -354,7 +128,7 @@ namespace memoryAccess {
 			}
 		}
 		template<typename T>
-		static T WriteData(LPVOID Address, T data)
+		static T writeData(LPVOID Address, T data)
 		{
 			HANDLE Process = readProcess();
 			T temporary = data;
@@ -380,4 +154,3 @@ namespace memoryAccess {
 		
 		private:
 	};
-}

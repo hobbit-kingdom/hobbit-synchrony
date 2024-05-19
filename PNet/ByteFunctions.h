@@ -29,15 +29,15 @@ int change_1Byte_hobbit_no_switch(LPVOID Address, BYTE Znachenie) noexcept;
 
 DWORD findPidByName(const char* name) noexcept;
 
-enum
-{
-	memQueryFlags_ = 0,
-	memQueryFlags_None = 0,
-	memQueryFlags_Read = 0b0001,
-	memQueryFlags_Write = 0b0010,
-	memQueryFlags_Execute = 0b0100,
-
-};
+//enum
+//{
+//	memQueryFlags_ = 0,
+//	memQueryFlags_None = 0,
+//	memQueryFlags_Read = 0b0001,
+//	memQueryFlags_Write = 0b0010,
+//	memQueryFlags_Execute = 0b0100,
+//
+//};
 
 struct OppenedQuery;
 

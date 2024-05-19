@@ -40,10 +40,6 @@ int main()
 	{
 		MyClient client;
 
-		cout << "Input y and press ENTER after you've launched the level\n";
-		cin >> s;
-
-		client.FindHobbits();
 		if (client.Connect(IPEndpoint(serverIp, 6112)))
 		{
 			while (client.IsConnected())

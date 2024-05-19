@@ -8,7 +8,6 @@ class MyClient : public Client
 public:
 	MyClient();
 	void SendPacket();
-	void FindHobbits();
 	//void OnConnectFail() override;
 	//void OnDisconnect(std::string reason) override;
 private:
