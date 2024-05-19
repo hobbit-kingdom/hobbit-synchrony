@@ -2,6 +2,7 @@
 #include "../PNet/MemoryAccess.h"
 #include "../HobbitMemory/NPC.h"
 #include "../HobbitMemory/PlayerCharacter.h"
+#include "../PNet/NetworkClient.h"
 #include <windows.h>
 #include <fstream>
 #include <iostream>
@@ -16,11 +17,7 @@ using namespace std;
 
 int myID = 0;
 
-unordered_map<int, int> idToIndex = { {1111, 0} };
 unordered_map<string, int> ipToId = {  };
-
-LPVOID xPointer;
-LPVOID pointerToAnimationOfBilbo;
 
 
 MyClient::MyClient()
@@ -31,30 +28,22 @@ MyClient::MyClient()
 
 	//setup the MemoryAccess
 	MemoryAccess::setExecutableName("Meridian.exe");
-
-	//setup player
-	xPointer = MemoryAccess::readData(LPVOID(0x0075BA3C));
-
-	//calculating the animation address
-	pointerToAnimationOfBilbo = LPVOID(0x560 + uint32_t(MemoryAccess::readData(LPVOID(0x0075BA3C))));
-	pointerToAnimationOfBilbo = LPVOID(0x8 + uint32_t(MemoryAccess::readData(pointerToAnimationOfBilbo)));
-	//find all playerCharacters in level
-
 	PlayerCharacter::OpenNewLevel();
 }
 void MyClient::SendPacket() {
 	if (myID == 0) return;
 
-	uint32_t uintPosX = MemoryAccess::readData(LPVOID(0x7C4 + uint32_t(xPointer)));
-	uint32_t uintPosY = MemoryAccess::readData(LPVOID(0x7C8 + uint32_t(xPointer)));
-	uint32_t uintPosZ = MemoryAccess::readData(LPVOID(0x7CC + uint32_t(xPointer)));
-	uint32_t uintRotY = MemoryAccess::readData(LPVOID(0x7AC + uint32_t(xPointer)));
-	uint32_t animBilbo = MemoryAccess::readData(pointerToAnimationOfBilbo);
+	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);	
 
-	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+	vector<uint32_t> packets = PlayerCharacter::setPacket();
 
-	*myLocation << 7 << 0 << myID << uintPosX << uintPosY << uintPosZ << uintRotY << animBilbo;
+	*myLocation << 2 + uint32_t(packets.size());
+	*myLocation << 0 << myID;
 
+	for (uint32_t i = 0; i < uint32_t(packets.size()); ++i)
+	{
+		*myLocation << packets[i];
+	}
 	connection.pm_outgoing.Append(myLocation);
 }
 void MyClient::Update()
@@ -86,15 +75,26 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 		*packet >> type;
 		*packet >> id;
 
-		if (type == 4) cout << "Just " << myID << '\n';
-
-		if (type == 4 && myID == 0)
+		if (type == 4)
 		{
-			myID = id;
-			cout << "Setted my id to " << myID << '\n';
-			*packet >> id;
-			cout << "Index don't care " << id << '\n';
+			// set id
+			if (myID == 0)
+			{
+				myID = id;
+				cout << "changed id" << endl;
+			}
+			cout << "Client ID: " << myID << endl;
 
+			//store the players
+			uint32_t numOnlineClients;
+			uint32_t clientId = 0;
+			*packet >> numOnlineClients;
+			for (uint32_t i = 0; i < numOnlineClients; ++i)
+			{
+				*packet >> clientId;
+				NetworkClient::networkClients.push_back(NetworkClient());
+				NetworkClient::networkClients.back().id = clientId;
+			}
 			return true;
 		}
 
@@ -102,20 +102,24 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 
 		if (type == 2)
 		{
-			uint32_t index = 0;
-			*packet >> index;
-			idToIndex[(id)] = (index);
+			cout << "Mapped " << id << endl;
+			NetworkClient::networkClients.push_back(NetworkClient());
+			NetworkClient::networkClients.back().id = id;
 
-			cout << "Mapped " << id << " TO " << index << "\n";
 		}
 
 		if (type == 3)
 		{
 			uint32_t index = 0;
-			*packet >> index;
-
-			idToIndex.erase(id);
-
+			for (int i = 0; i < NetworkClient::networkClients.size(); ++i)
+			{
+				if (id == NetworkClient::networkClients[i].id)
+				{
+					index = i;
+					break;
+				}
+			}
+			NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + index);
 			PlayerCharacter::playerCharacters[index].setIsUsed(false);
 			PlayerCharacter::playerCharacters[index].setId(0);
 
@@ -125,47 +129,24 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 
 		if (type == 0)
 		{
-			cout << "Received\n";
-			cout << arraySize << " " << type << " " << id << " ";
-			cout << endl;
+			uint32_t index = 0;
+			for (int i = 0; i < NetworkClient::networkClients.size(); ++i)
+			{
+				if (id == NetworkClient::networkClients[i].id)
+				{
+					index = i;
+					break;
+				}
+			}
+			vector<uint32_t> pakcets;
+			uint32_t packetUInt;
 
-			cout << "\033[93m";
-			cout << "Recieve Packet" << endl;
-			cout << string(20, '~') << endl;
-
-
-			// set x position
-			uint32_t element = 0;
-			*packet >> element;
-			PlayerCharacter::playerCharacters[idToIndex[id]].setPositionX(UInt32Wrapper(element));
-			cout << "Xpos: " << setw(10) << float(UInt32Wrapper(element)) << "| ";
-
-			// set y position
-			*packet >> element;
-			PlayerCharacter::playerCharacters[idToIndex[id]].setPositionY(UInt32Wrapper(element));
-			cout << "Ypos: " << setw(10) << float(UInt32Wrapper(element)) << "| ";
-
-			// set z position
-			*packet >> element;
-			PlayerCharacter::playerCharacters[idToIndex[id]].setPositionZ(UInt32Wrapper(element));
-			cout << "Zpos: " << setw(10) << float(UInt32Wrapper(element)) << "| ";
-
-			cout << endl;
-
-			// set y rotation
-			*packet >> element;
-			PlayerCharacter::playerCharacters[idToIndex[id]].setRotationY(UInt32Wrapper(element));
-			cout << "Yrot: " << setw(10) << float(UInt32Wrapper(element)) << "| ";
-
-			// set animation
-			*packet >> element;
-			PlayerCharacter::playerCharacters[idToIndex[id]].setAnimation(UInt32Wrapper(element));
-			cout << "Anim: " << setw(10) << int(UInt32Wrapper(element)) << "| ";
-
-			cout << endl;
-			cout << string(20, '~');
-			cout << "\033[0m";
-			cout << endl;
+			for(uint32_t i = 0; i < arraySize - 2; ++i)
+			{
+				*packet >> packetUInt;
+				pakcets.push_back(packetUInt);
+			}
+			PlayerCharacter::readPacket(pakcets, index);
 		}
 		break;
 	}

@@ -129,6 +129,7 @@
     <ClInclude Include="IPVersion.h" />
     <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="Network.h" />
+    <ClInclude Include="NetworkClient.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="PacketException.h" />
     <ClInclude Include="PacketManager.h" />
@@ -145,6 +146,7 @@
     <ClCompile Include="IPEndpoint.cpp" />
     <ClCompile Include="MemoryAccess.cpp" />
     <ClCompile Include="Network.cpp" />
+    <ClCompile Include="NetworkClient.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="PacketManager.cpp" />
     <ClCompile Include="Server.cpp" />

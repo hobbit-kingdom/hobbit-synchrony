@@ -1,16 +1,20 @@
 #pragma once
 #include "NPC.h"
 #include <vector>
+#include <iomanip>
+#include <iostream>
 class PlayerCharacter : public NPC
 {
 public:
 	// stores all NPCrgeom for players
 	static std::vector<PlayerCharacter> playerCharacters;
 	static const size_t MAX_PLAYERS = 3;	// number of players on one server
-
-	//constants 
-
 	static const std::vector<uint32_t> fakeGuids;
+	static const LPVOID X_POSITION_PTR;
+
+
+	static LPVOID bilboPosXPTR;
+	static LPVOID bilboAnimPTR;
 
 	// Constructors
 	//PlayerCharacter(UInt32Wrapper GUIDToFind) : NPC(UInt32Wrapper(GUIDToFind)) {}
@@ -52,12 +56,19 @@ public:
 	{
 		playerCharacters.clear();
 		findHobbits();
+		setPtrs();
+	}
+	static void setPtrs()
+	{
+		bilboPosXPTR = MemoryAccess::readData(LPVOID(X_POSITION_PTR));
+		bilboAnimPTR = LPVOID(0x8 + uint32_t(MemoryAccess::readData(LPVOID(0x560 + uint32_t(MemoryAccess::readData(X_POSITION_PTR))))));
 	}
 	static void checkUpdateLevel()
 	{
 		static uint32_t isLoadingLayers;
 		static uint32_t readLoadLayers;
 		readLoadLayers = MemoryAccess::readData(LPVOID(0x00760864));
+		isLoaded = !readLoadLayers;
 		if (isLoadingLayers != readLoadLayers)
 		{
 			if (!readLoadLayers)
@@ -74,13 +85,82 @@ public:
 		return MemoryAccess::readData(LPVOID(0x762b5c));
 	}
 
-private:
+	static std::vector<uint32_t> setPacket()
+	{
+		if (!isLoaded)
+			return std::vector<uint32_t>();
+
+		uint32_t uintPosX = MemoryAccess::readData(LPVOID(0x7C4 + uint32_t(bilboPosXPTR)));
+		uint32_t uintPosY = MemoryAccess::readData(LPVOID(0x7C8 + uint32_t(bilboPosXPTR)));
+		uint32_t uintPosZ = MemoryAccess::readData(LPVOID(0x7CC + uint32_t(bilboPosXPTR)));
+		uint32_t uintRotY = MemoryAccess::readData(LPVOID(0x7AC + uint32_t(bilboPosXPTR)));
+		uint32_t animBilbo = MemoryAccess::readData(bilboAnimPTR);
+
+		std::vector<uint32_t> packets;
+
+		packets.push_back(uintPosX);
+		packets.push_back(uintPosY);
+		packets.push_back(uintPosZ);
+		packets.push_back(uintRotY);
+		packets.push_back(animBilbo);
+
+		return packets;
+	}
 	
+	static void readPacket(std::vector<uint32_t> packets, uint32_t playerIdx)
+	{
+		if (!isLoaded)
+			return;
+		if (packets.empty())
+			return;
+
+		std::cout << "\033[93m";
+		std::cout << "Recieve Packet" << std::endl;
+		std::cout << std::string(20, '~') << std::endl;
+
+		// set x position
+		int packInd = 0;
+		PlayerCharacter::playerCharacters[playerIdx].setPositionX(UInt32Wrapper(packets[packInd]));
+		std::cout << "Xpos: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
+		++packInd;
+
+		// set y position
+		PlayerCharacter::playerCharacters[playerIdx].setPositionY(UInt32Wrapper(packets[packInd]));
+		std::cout << "Ypos: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
+		++packInd;
+
+		// set z position
+		PlayerCharacter::playerCharacters[playerIdx].setPositionZ(UInt32Wrapper(packets[packInd]));
+		std::cout << "Zpos: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
+		++packInd;
+
+		std::cout << std::endl;
+
+		// set y rotation
+		PlayerCharacter::playerCharacters[playerIdx].setRotationY(UInt32Wrapper(packets[packInd]));
+		std::cout << "Yrot: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
+		++packInd;
+
+		// set animation
+		PlayerCharacter::playerCharacters[playerIdx].setAnimation(UInt32Wrapper(packets[packInd]));
+		std::cout << "Anim: " << std::setw(10) << int(UInt32Wrapper(packets[packInd])) << "| ";
+		++packInd;
+
+		std::cout << std::endl;
+		std::cout << std::string(20, '~');
+		std::cout << "\033[0m";
+		std::cout << std::endl;
+	}
+private:
+	static bool isLoaded;
 	bool isUsed = false;
 	int id = 0;
 };
-
-
+//public
 const std::vector<uint32_t> PlayerCharacter::fakeGuids = {3887403015, 3887403009, 3887403010};
 std::vector<PlayerCharacter> PlayerCharacter::playerCharacters;
-
+const LPVOID PlayerCharacter::X_POSITION_PTR = LPVOID(0x0075BA3C);
+LPVOID PlayerCharacter::bilboPosXPTR = 0;
+LPVOID PlayerCharacter::bilboAnimPTR = 0;
+//private
+bool PlayerCharacter::isLoaded = false;

@@ -11,7 +11,7 @@ class NPC
 
 public:
 	// Data members
-	static const UInt32Wrapper OBJECT_ARRAY_PTR; //equals to 0x0076F648
+	static const LPVOID OBJECT_ARRAY_PTR; //equals to 0x0076F648
 
 	// Constructors
 	NPC(LPVOID addressOfNPC)
@@ -123,4 +123,4 @@ private:
 	}
 };
 
-const UInt32Wrapper OBJECT_ARRAY_PTR = UInt32Wrapper(0x0076F648);
+const LPVOID OBJECT_ARRAY_PTR = LPVOID(0x0076F648);
