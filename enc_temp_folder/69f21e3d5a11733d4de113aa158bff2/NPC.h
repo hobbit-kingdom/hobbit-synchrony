@@ -37,15 +37,24 @@ public:
 	// Position
 	void setPositionX(UInt32Wrapper newPosition)
 	{
-		MemoryAccess::writeData(posxAddress, newPosition);
+		for (LPVOID e : posxAddress)
+		{
+			MemoryAccess::writeData(e, newPosition);
+		}
 	}
 	void setPositionY(UInt32Wrapper newPosition)
 	{
-		MemoryAccess::writeData(LPVOID(0x4 + uint32_t(posxAddress)), newPosition);
+		for (LPVOID e : posxAddress)
+		{
+			MemoryAccess::writeData(LPVOID(0x4 + uint32_t(e)), newPosition);
+		}
 	}
 	void setPositionZ(UInt32Wrapper newPosition)
 	{
-		MemoryAccess::writeData(LPVOID(0x8 + uint32_t(posxAddress)), newPosition);
+		for (LPVOID e : posxAddress)
+		{
+			MemoryAccess::writeData(LPVOID(0x8 + uint32_t(e)), newPosition);
+		}
 	}
 
 
@@ -59,7 +68,10 @@ public:
 	// Rotation
 	void setRotationY(UInt32Wrapper newRotation)
 	{
-		MemoryAccess::writeData(rotyAddress, newRotation);
+		for (int i = 0; i < rotyAddress.size(); i++)
+		{
+			MemoryAccess::writeData(rotyAddress[i], newRotation);
+		}
 	}
 
 	// Animation
@@ -75,8 +87,8 @@ private:
 
 	LPVOID objAddress;
 
-	LPVOID posxAddress;
-	LPVOID rotyAddress;
+	std::vector<LPVOID> posxAddress;
+	std::vector<LPVOID> rotyAddress;
 
 	LPVOID animAddress;
 
@@ -86,14 +98,25 @@ private:
 	{
 		// general position X
 		LPVOID animAdd1 = getObjAddress();
-		posxAddress = LPVOID(0xC + uint32_t(animAdd1));
+		posxAddress.push_back(LPVOID(0xC + uint32_t(animAdd1)));
+
+		//shadow position X
+		posxAddress.push_back(LPVOID(0x18 + uint32_t(animAdd1)));
+
+		//shadow animation X
+		LPVOID animAdd2 = MemoryAccess::readData(LPVOID(0x304 - 0x8 + uint32_t(animAdd1)));
+		LPVOID animAdd3 = MemoryAccess::readData(LPVOID(0x50 + uint32_t(animAdd2)));
+		LPVOID animAdd4 = MemoryAccess::readData(LPVOID(0x10C + uint32_t(animAdd3)));
+		posxAddress.push_back(LPVOID(0x8 - 0xc4 + uint32_t(animAdd4)));
 
 
 		//dispplay the poistion Data
 		std::cout << "Position Data:" << std::endl;
-		std::cout << "posX: " << float(MemoryAccess::readData(posxAddress)) << std::endl;
-		std::cout << "posXAddress: " << posxAddress << std::endl;
-		
+		for (LPVOID e : posxAddress)
+		{
+			std::cout << "posX: " << float(MemoryAccess::readData(e)) << std::endl;
+			std::cout << "posXAddress: " << e << std::endl;
+		}
 		std::cout << std::endl;
 	}
 	void updateRotationAddress()
@@ -101,13 +124,37 @@ private:
 		
 		// general position X
 		LPVOID animAdd1 = getObjAddress();
-		rotyAddress = LPVOID(0x64 + uint32_t(animAdd1));
+		rotyAddress.push_back(LPVOID(0x64 + uint32_t(animAdd1)));
+		/*
+		//shadow position X
+		posxAddress.push_back(LPVOID(0xB4 + uint32_t(animAdd1)));
 
+		//shadow animation X
+		LPVOID animAdd2 = MemoryAccess::readData(LPVOID(0x304 - 0x8 + uint32_t(animAdd1)));
+		LPVOID animAdd3 = MemoryAccess::readData(LPVOID(0x50 + uint32_t(animAdd2)));
+		LPVOID animAdd4 = MemoryAccess::readData(LPVOID(0x10C + uint32_t(animAdd3)));
+		posxAddress.push_back(LPVOID(0x8 - 0xB4 + uint32_t(animAdd4)));
+		*/
+
+		//there is one more rotation i don't know what it does, thus I keep this code for future 
+		// to find the address relation from GUID address
+		/*
+		float fakeRot = 0;
+		LPVOID lp2 = LPVOID((0x64 + uint32_t(getObjAddress())));
+		fakeRot = MemoryAccess::readData(lp2);
+		data1 = {};
+		data1.type = 4;
+		data1.data.real32 = fakeRot; //fakeRotations[i];
+		rotyAddress = findBytePatternInProcessMemory(read_process_hobbit(), data1.ptr(), data1.getBytesSize());
+		*/
 
 		//dispplay the poistion Data
 		std::cout << "Rotation Data:" << std::endl;
-		std::cout << "rotY: " << float(MemoryAccess::readData(rotyAddress)) << std::endl;
-		std::cout << "rotYAddress: " << rotyAddress << std::endl;
+		for (LPVOID e : rotyAddress)
+		{
+			std::cout << "rotY: " << float(MemoryAccess::readData(e)) << std::endl;
+			std::cout << "rotYAddress: " << e << std::endl;
+		}
 		std::cout << std::endl;
 	}
 	void updateAnimationAddress()
