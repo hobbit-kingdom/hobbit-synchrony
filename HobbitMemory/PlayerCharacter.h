@@ -8,20 +8,17 @@ class PlayerCharacter : public NPC
 public:
 	// stores all NPCrgeom for players
 	static std::vector<PlayerCharacter> playerCharacters;
-	static const size_t MAX_PLAYERS = 3;	// number of players on one server
-	static const std::vector<uint32_t> fakeGuids;
+	static const size_t MAX_PLAYERS = 4; // Updated MAX_PLAYERS
+	static const std::vector<uint32_t> fakeGuids; // Updated fakeGuids
 	static const LPVOID X_POSITION_PTR;
-
+	static const LPVOID test;
 
 	static LPVOID bilboPosXPTR;
 	static LPVOID bilboAnimPTR;
 
 	// Constructors
 	//PlayerCharacter(UInt32Wrapper GUIDToFind) : NPC(UInt32Wrapper(GUIDToFind)) {}
-	PlayerCharacter(LPVOID addresOfNPC) : NPC(addresOfNPC) 
-	{
-		 
-	}
+	PlayerCharacter(LPVOID addresOfNPC) : NPC(addresOfNPC) {}
 
 	// isUsed
 	bool getIsUsed() { return isUsed; }
@@ -151,16 +148,14 @@ public:
 		std::cout << "\033[0m";
 		std::cout << std::endl;
 	}
+	static bool checkHobbitOn()
+	{
+		//setup the MemoryAccess
+		MemoryAccess::setExecutableName("Meridian.exe");
+		return MemoryAccess::readProcess() != 0;
+	}
 private:
 	static bool isLoaded;
 	bool isUsed = false;
 	int id = 0;
 };
-//public
-const std::vector<uint32_t> PlayerCharacter::fakeGuids = {3887403015, 3887403009, 3887403010};
-std::vector<PlayerCharacter> PlayerCharacter::playerCharacters;
-const LPVOID PlayerCharacter::X_POSITION_PTR = LPVOID(0x0075BA3C);
-LPVOID PlayerCharacter::bilboPosXPTR = 0;
-LPVOID PlayerCharacter::bilboAnimPTR = 0;
-//private
-bool PlayerCharacter::isLoaded = false;

@@ -132,6 +132,7 @@
     <ClInclude Include="UInt32Wrapper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="PlayerCharacter.cpp" />
     <ClCompile Include="UInt32Wrapper.cpp" />

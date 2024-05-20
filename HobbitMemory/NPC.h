@@ -4,7 +4,6 @@
 #include "UInt32Wrapper.h"
 #include "../PNet/MemoryAccess.h"
 #include "../PNet/ByteFunctions.h"
-#include "../PNet/GlobalTypes.h"
 
 class NPC
 {
@@ -70,9 +69,6 @@ public:
 
 private:
 	//temporary
-	GenericType data1;
-
-
 	LPVOID objAddress;
 
 	LPVOID posxAddress;

@@ -72,9 +72,6 @@
     <ClInclude Include="MemoryAccess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GlobalTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>

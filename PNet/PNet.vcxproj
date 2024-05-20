@@ -122,7 +122,6 @@
     <ClInclude Include="ByteFunctions.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="GlobalTypes.h" />
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="IncludeMe.h" />
     <ClInclude Include="IPEndpoint.h" />

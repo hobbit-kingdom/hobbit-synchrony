@@ -7,15 +7,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PNet", "PNet\PNet.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{3127825D-B65B-48BC-B4C1-FE4DD4808378}"
 	ProjectSection(ProjectDependencies) = postProject
+		{4E0100B1-8502-45DD-BD36-03E221433B75} = {4E0100B1-8502-45DD-BD36-03E221433B75}
 		{99167C77-114D-4256-A78C-9C65852878C2} = {99167C77-114D-4256-A78C-9C65852878C2}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{A3737D19-4B6B-4C02-B5BD-97B096744C56}"
 	ProjectSection(ProjectDependencies) = postProject
-		{99167C77-114D-4256-A78C-9C65852878C2} = {99167C77-114D-4256-A78C-9C65852878C2}
+		{4E0100B1-8502-45DD-BD36-03E221433B75} = {4E0100B1-8502-45DD-BD36-03E221433B75}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HobbitMemory", "HobbitMemory\HobbitMemory.vcxproj", "{4E0100B1-8502-45DD-BD36-03E221433B75}"
+	ProjectSection(ProjectDependencies) = postProject
+		{99167C77-114D-4256-A78C-9C65852878C2} = {99167C77-114D-4256-A78C-9C65852878C2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
