@@ -120,29 +120,29 @@ public:
 
 		// set x position
 		int packInd = 0;
-		PlayerCharacter::playerCharacters[playerIdx].setPositionX(UInt32Wrapper(packets[packInd]));
+		playerCharacters[playerIdx].setPositionX(UInt32Wrapper(packets[packInd]));
 		std::cout << "Xpos: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
 		++packInd;
 
 		// set y position
-		PlayerCharacter::playerCharacters[playerIdx].setPositionY(UInt32Wrapper(packets[packInd]));
+		playerCharacters[playerIdx].setPositionY(UInt32Wrapper(packets[packInd]));
 		std::cout << "Ypos: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
 		++packInd;
 
 		// set z position
-		PlayerCharacter::playerCharacters[playerIdx].setPositionZ(UInt32Wrapper(packets[packInd]));
+		playerCharacters[playerIdx].setPositionZ(UInt32Wrapper(packets[packInd]));
 		std::cout << "Zpos: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
 		++packInd;
 
 		std::cout << std::endl;
 
 		// set y rotation
-		PlayerCharacter::playerCharacters[playerIdx].setRotationY(UInt32Wrapper(packets[packInd]));
+		playerCharacters[playerIdx].setRotationY(UInt32Wrapper(packets[packInd]));
 		std::cout << "Yrot: " << std::setw(10) << float(UInt32Wrapper(packets[packInd])) << "| ";
 		++packInd;
 
 		// set animation
-		PlayerCharacter::playerCharacters[playerIdx].setAnimation(UInt32Wrapper(packets[packInd]));
+		playerCharacters[playerIdx].setAnimation(UInt32Wrapper(packets[packInd]));
 		std::cout << "Anim: " << std::setw(10) << int(UInt32Wrapper(packets[packInd])) << "| ";
 		++packInd;
 
@@ -156,11 +156,4 @@ private:
 	bool isUsed = false;
 	int id = 0;
 };
-//public
-const std::vector<uint32_t> PlayerCharacter::fakeGuids = {3887403015, 3887403009, 3887403010};
-std::vector<PlayerCharacter> PlayerCharacter::playerCharacters;
-const LPVOID PlayerCharacter::X_POSITION_PTR = LPVOID(0x0075BA3C);
-LPVOID PlayerCharacter::bilboPosXPTR = 0;
-LPVOID PlayerCharacter::bilboAnimPTR = 0;
-//private
-bool PlayerCharacter::isLoaded = false;
+

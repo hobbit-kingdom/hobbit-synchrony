@@ -10,7 +10,6 @@
 
 #include <cstring> // for std::memcpy
 #include <type_traits> // for std::enable_if and std::is_arithmetic
-#include "../HobbitMemory/UINT32Wrapper.h"
 
 
 using PROCESS = HANDLE;
@@ -48,20 +47,7 @@ using PROCESS = HANDLE;
 		static DWORD readProcessID(const char* name);
 		static DWORD readProcessID();
 
-		static std::vector<uint32_t> readData(LPVOID Address, size_t numberOfDWords) {
-			size_t numberOfBytes = numberOfDWords * sizeof(uint32_t);
-			std::vector<uint32_t> data(numberOfDWords);
-			HANDLE Process = readProcess();
-
-			if (!ReadProcessMemory(Process, Address, data.data(), numberOfBytes, NULL)) {
-				// If reading the data from memory fails, clear the data vector
-				data.clear();
-			}
-
-			CloseHandle(Process);
-			return data;
-		}
-		static UInt32Wrapper readData(LPVOID Address)
+		static uint32_t readData(LPVOID Address)
 		{
 			uint32_t data = 0;
 			HANDLE Process = readProcess();
@@ -70,9 +56,12 @@ using PROCESS = HANDLE;
 				data = 0;
 			}
 			CloseHandle(Process);
-			return UInt32Wrapper(data);
+			return uint32_t(data);
 		}
-
+		static uint32_t readData(uint32_t Address)
+		{
+			return uint32_t(readData(LPVOID(Address)));
+		}
 		static LPVOID findDataInStackHobbit(LPVOID beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t dataToFind) {
 			HANDLE Process = readProcess();
 			if (!Process) {
@@ -128,6 +117,11 @@ using PROCESS = HANDLE;
 			}
 		}
 		template<typename T>
+		static uint32_t writeDataSwitcher(uint32_t Address, uint32_t newData, uint32_t initialData)
+		{
+			writeDataSwitcher(LPVOID(Address), newData, initialData);
+		}
+		template<typename T>
 		static T writeData(LPVOID Address, T data)
 		{
 			HANDLE Process = readProcess();
@@ -144,7 +138,10 @@ using PROCESS = HANDLE;
 			VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
 			if (bWriteSuccess) return T(); // Return default value of type T if writing fails
 		}
-
+		static void writeData(uint32_t Address, uint32_t data)
+		{
+			writeData(LPVOID(Address), data);
+		}
 
 		// additional funcitons
 		static std::vector<void*> findBytePatternInProcessMemory(void* pattern, size_t patternLen);

@@ -18,7 +18,7 @@ int main()
 			{
 				server.Frame();
 				float tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
-				if (tim > 220)
+				if (tim > 20)
 				{
 					start = high_resolution_clock::now();
 					server.SendPackets();
@@ -27,6 +27,6 @@ int main()
 		}
 	}
 	Network::Shutdown();
-	system("pause");
+	//system("pause");
 	return 0;
 }

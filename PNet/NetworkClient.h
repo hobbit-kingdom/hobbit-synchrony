@@ -9,13 +9,22 @@ public:
 		id = idCounter;
 		++idCounter;
 	}
+	static uint32_t GetIndexByID(uint32_t playerId)
+	{
+		for (int i = 0; i < networkClients.size(); ++i)
+		{
+			if (networkClients[i].id == playerId)
+			{
+				return i;
+			}
+		}
+		return 0;
+	}
+	uint32_t id;
+
 	static const int MAX_PLAYERS;
 	static uint32_t idCounter;
 	static std::vector<NetworkClient> networkClients;
-	uint32_t id;
 };
-const int NetworkClient::MAX_PLAYERS = 4;
-uint32_t NetworkClient::idCounter = 0x0001;
 
-std::vector<NetworkClient> NetworkClient::networkClients;
 

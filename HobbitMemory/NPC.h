@@ -5,21 +5,26 @@
 #include "../PNet/MemoryAccess.h"
 #include "../PNet/ByteFunctions.h"
 #include "../PNet/GlobalTypes.h"
-
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <windows.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <windows.h>
 class NPC
 {
 
 public:
 	// Data members
-	static const LPVOID OBJECT_ARRAY_PTR; //equals to 0x0076F648
+	static const uint32_t OBJECT_ARRAY_PTR; //equals to 0x0076F648
 
 	// Constructors
-	NPC(LPVOID addressOfNPC)
+	NPC(uint32_t addressOfNPC)
 	{
 		std::cout << "CreateNPC" << std::endl;
 		std::cout << "GUID Address: " << addressOfNPC << std::endl;
 		setObjAddress(addressOfNPC);
-		setGUID(MemoryAccess::readData(LPVOID(0x8 + uint32_t(addressOfNPC))));
+		setGUID(MemoryAccess::readData(0x8 + addressOfNPC));
 
 		updatePositionAddress();
 		updateRotationAddress();
@@ -28,28 +33,28 @@ public:
 		std::cout << std::endl;
 	}
 	// Object Address
-	LPVOID getObjAddress() { return objAddress; }
-	void setObjAddress(LPVOID newObjAddress) { objAddress = newObjAddress; }
+	uint32_t getObjAddress() { return objAddress; }
+	void setObjAddress(uint32_t newObjAddress) { objAddress = newObjAddress; }
 
 	// GUID
-	void setGUID(UInt32Wrapper newGUID) { guid = newGUID; }
+	void setGUID(uint32_t newGUID) { guid = newGUID; }
 
 	// Position
-	void setPositionX(UInt32Wrapper newPosition)
+	void setPositionX(uint32_t newPosition)
 	{
 		MemoryAccess::writeData(posxAddress, newPosition);
 	}
-	void setPositionY(UInt32Wrapper newPosition)
+	void setPositionY(uint32_t newPosition)
 	{
-		MemoryAccess::writeData(LPVOID(0x4 + uint32_t(posxAddress)), newPosition);
+		MemoryAccess::writeData(0x4 + posxAddress, newPosition);
 	}
-	void setPositionZ(UInt32Wrapper newPosition)
+	void setPositionZ(uint32_t newPosition)
 	{
-		MemoryAccess::writeData(LPVOID(0x8 + uint32_t(posxAddress)), newPosition);
+		MemoryAccess::writeData(0x8 + posxAddress, newPosition);
 	}
 
 
-	void setPosition(UInt32Wrapper newPositionX, UInt32Wrapper newPositionY, UInt32Wrapper newPositionZ)
+	void setPosition(uint32_t newPositionX, uint32_t newPositionY, uint32_t newPositionZ)
 	{
 		setPositionX(newPositionX);
 		setPositionY(newPositionY);
@@ -57,13 +62,13 @@ public:
 	}
 
 	// Rotation
-	void setRotationY(UInt32Wrapper newRotation)
+	void setRotationY(uint32_t newRotation)
 	{
 		MemoryAccess::writeData(rotyAddress, newRotation);
 	}
 
 	// Animation
-	void setAnimation(UInt32Wrapper newAnimation)
+	void setAnimation(uint32_t newAnimation)
 	{
 		MemoryAccess::writeData(animAddress, newAnimation);
 	}
@@ -73,20 +78,20 @@ private:
 	GenericType data1;
 
 
-	LPVOID objAddress;
+	uint32_t objAddress;
 
-	LPVOID posxAddress;
-	LPVOID rotyAddress;
+	uint32_t posxAddress;
+	uint32_t rotyAddress;
 
-	LPVOID animAddress;
+	uint32_t animAddress;
 
-	UInt32Wrapper guid;
+	uint32_t guid;
 
 	void updatePositionAddress()
 	{
 		// general position X
-		LPVOID animAdd1 = getObjAddress();
-		posxAddress = LPVOID(0xC + uint32_t(animAdd1));
+		uint32_t animAdd1 = getObjAddress();
+		posxAddress = 0xC + animAdd1;
 
 
 		//dispplay the poistion Data
@@ -100,8 +105,8 @@ private:
 	{
 		
 		// general position X
-		LPVOID animAdd1 = getObjAddress();
-		rotyAddress = LPVOID(0x64 + uint32_t(animAdd1));
+		uint32_t animAdd1 = getObjAddress();
+		rotyAddress = 0x64 + animAdd1;
 
 
 		//dispplay the poistion Data
@@ -113,14 +118,14 @@ private:
 	void updateAnimationAddress()
 	{
 		// animation
-		LPVOID animAdd1 = getObjAddress();
-		LPVOID animAdd2 = MemoryAccess::readData(LPVOID(0x304 - 0x8 + uint32_t(animAdd1)));
-		LPVOID animAdd3 = MemoryAccess::readData(LPVOID(0x50 + uint32_t(animAdd2)));
-		LPVOID animAdd4 = MemoryAccess::readData(LPVOID(0x10C + uint32_t(animAdd3)));
-		animAddress = LPVOID(0x8 + uint32_t(animAdd4));
+		uint32_t animAdd1 = getObjAddress();
+		uint32_t animAdd2 = MemoryAccess::readData(0x304 - 0x8 + animAdd1);
+		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
+		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
+		animAddress = 0x8 + animAdd4;
 		std::cout << "anim: " << MemoryAccess::readData(animAddress) << std::endl;
 		std::cout << "animAddress: " << animAddress << std::endl;
 	}
 };
 
-const LPVOID OBJECT_ARRAY_PTR = LPVOID(0x0076F648);
+const uint32_t OBJECT_ARRAY_PTR = 0x0076F648;

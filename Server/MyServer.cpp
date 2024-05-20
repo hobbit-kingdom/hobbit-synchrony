@@ -1,93 +1,82 @@
 #include "MyServer.h"
-#include "../PNet/MemoryAccess.h"
-#include "../HobbitMemory/NPC.h"
-#include "../HobbitMemory/PlayerCharacter.h"
-#include "../PNet/NetworkClient.h"
-#include <windows.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <memoryapi.h>
-#include <tlhelp32.h>
-#include <vector>
-#include <unordered_map>
-#include <iomanip>
+
 using namespace std;
 
-//types of data 
-//  1 - new player Joined 
-//  0 - send positon rotation and animation
-//  2 - add newplayer to hashmaps
-//  3 - remove player from hashmaps
+enum PackT : uint32_t {
+	SEND_PLAYER_DATA = 0,
+	ADD_PLAYER = 2,
+	REMOVE_PLAYER = 3,
+	CREATE_PLAYER = 4
+};
 
-// id , position in array
+
 unordered_map<string, int> ipToId = {  };
-
 
 
 void MyServer::OnConnect(TCPConnection& newConnection)
 {
 	std::cout << newConnection.ToString() << " - New connection accepted." << std::endl;
 
-	if (connections.size() > NetworkClient::MAX_PLAYERS - 1)
+	// check if overloaded
+	if (connections.size() > NetworkClient::MAX_PLAYERS)
 	{
 		std::cout << "New player has connected but we kick him since the server is full\n";
 		newConnection.Close();
 		return;
 	}
 
+	// add client to the list
 	NetworkClient::networkClients.push_back(NetworkClient());
-
 	std::cout << "Assigned " << NetworkClient::networkClients.back().id << " " << "index " << NetworkClient::networkClients.size() << '\n';
 
-	// assign id to client
-	std::shared_ptr<Packet> assignId = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-	*assignId << 3 << 4 << NetworkClient::networkClients.back().id;
-	newConnection.pm_outgoing.Append(assignId);
 
-	// send data about other clients
-	*assignId << NetworkClient::networkClients.size() - 1;
+	// assign ID to client
+	std::shared_ptr<Packet> createPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+	*createPlayer << 2 << CREATE_PLAYER << NetworkClient::networkClients.back().id;
+	// send data about other clients, not including itself
+	*createPlayer << NetworkClient::networkClients.size() - 1;
 	for (int i = 0; i < NetworkClient::networkClients.size() - 1; ++i)
 	{
-		*assignId << NetworkClient::networkClients[i].id;
+		*createPlayer << NetworkClient::networkClients[i].id;
 	}
+	//send only to new conection
+	newConnection.pm_outgoing.Append(createPlayer);
+
 
 	// notify other clients about new client
-	std::shared_ptr<Packet> mapNewPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+	std::shared_ptr<Packet> addPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
 	ipToId[newConnection.ToString()] = NetworkClient::networkClients.back().id;
-	*mapNewPlayer << 3 << 2 << NetworkClient::networkClients.back().id;
-
+	*addPlayer << 2 << ADD_PLAYER << NetworkClient::networkClients.back().id;
+	// send to everyone
 	for (auto& connection : connections)
 	{
 		if (&connection == &newConnection)
 			continue;
 
-		connection.pm_outgoing.Append(mapNewPlayer);
+		connection.pm_outgoing.Append(addPlayer);
 	}
 }
 void MyServer::OnDisconnect(TCPConnection& lostConnection, std::string reason)
 {
 	std::cout << "[" << reason << "] Connection lost: " << lostConnection.ToString() << "." << std::endl;
 
-	std::shared_ptr<Packet> removeDisconnectedPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+	// gets id of the player to remove
 	uint32_t playerId = ipToId[lostConnection.ToString()];
 
-	*removeDisconnectedPlayer << 2 << 3 << playerId;
+	// find index
+	uint32_t index = NetworkClient::GetIndexByID(playerId);
+	// remove client
+	NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + index);
 
-	for (int i = 0; i < NetworkClient::networkClients.size(); ++i)
-	{
-		if (NetworkClient::networkClients[i].id == playerId)
-		{
-			NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + i);
-			break;
-		}
-	}
+	// sned remove player message
+	std::shared_ptr<Packet> removePlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+	*removePlayer << 2 << REMOVE_PLAYER << playerId;
 	for (auto& connection : connections)
 	{
 		if (&connection == &lostConnection)
 			continue;
 
-		connection.pm_outgoing.Append(removeDisconnectedPlayer);
+		connection.pm_outgoing.Append(removePlayer);
 	}
 }
 
@@ -112,22 +101,14 @@ bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 		*packet >> type;
 		*packet >> id;
 
-		if (type == 0)
+		if (type == SEND_PLAYER_DATA)
 		{
-			uint32_t index = 0;
-			for (int i = 0; i < NetworkClient::networkClients.size(); ++i)
-			{
-				if (id == NetworkClient::networkClients[i].id)
-				{
-					index = i;
-					break;
-				}
-			}
-
 			std::shared_ptr<Packet> positonPacket = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-			*positonPacket << arraySize << type << id;
 			uint32_t packetUInt;
 
+
+			*positonPacket << arraySize << type << id;
+			// subtract from size two elements (id, type)
 			for (uint32_t i = 0; i < arraySize - 2; ++i)
 			{
 				*packet >> packetUInt;
@@ -153,4 +134,3 @@ bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 
 	return true;
 }
-

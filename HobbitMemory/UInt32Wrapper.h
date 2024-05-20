@@ -1,5 +1,8 @@
 #pragma once
 #include <iostream>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <windows.h>
 class UInt32Wrapper {
 public:
 	// Constructor

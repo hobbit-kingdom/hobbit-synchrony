@@ -1,60 +1,58 @@
 #include "MyClient.h"
-#include "../PNet/MemoryAccess.h"
-#include "../HobbitMemory/NPC.h"
-#include "../HobbitMemory/PlayerCharacter.h"
-#include "../PNet/NetworkClient.h"
-#include <windows.h>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <memoryapi.h>
-#include <tlhelp32.h>
-#include <vector>
-#include <unordered_map>
-#include <iomanip>
+
 
 using namespace std;
 
-int myID = 0;
+enum PackT : uint32_t {
+	SEND_PLAYER_DATA = 0,
+	ADD_PLAYER = 2,
+	REMOVE_PLAYER = 3,
+	CREATE_PLAYER = 4
+};
+
 
 unordered_map<string, int> ipToId = {  };
 
-
+ClientGame clientGame;
 MyClient::MyClient()
 {
 	string s;
-	cout << "Input y and press ENTER after you've launched the level\n";
-	cin >> s;
-
-	//setup the MemoryAccess
-	MemoryAccess::setExecutableName("Meridian.exe");
-	PlayerCharacter::OpenNewLevel();
+	while (!clientGame.checkInGame())
+	{
+		cout << "Press [y] when the Hobbit_2003 is open: ";
+		cin >> s;
+	}
+	clientGame.openNewLevel();
 }
 void MyClient::SendPacket() {
-	if (myID == 0) return;
 
-	std::shared_ptr<Packet> myLocation = std::make_shared<Packet>(PacketType::PT_IntegerArray);	
+	// when it is not initialized
+	if (clientID == 0) return;
 
-	vector<uint32_t> packets = PlayerCharacter::setPacket();
+	std::shared_ptr<Packet> packet = std::make_shared<Packet>(PacketType::PT_IntegerArray);
+	// set the packets
+	vector<uint32_t> packets = clientGame.setPackets();
+	// calculate the size, type of the packet, id
+	*packet << 2 + uint32_t(packets.size()) << SEND_PLAYER_DATA << clientID;
 
-	*myLocation << 2 + uint32_t(packets.size());
-	*myLocation << 0 << myID;
-
+	// pack all the packages
 	for (uint32_t i = 0; i < uint32_t(packets.size()); ++i)
 	{
-		*myLocation << packets[i];
+		*packet << packets[i];
 	}
-	connection.pm_outgoing.Append(myLocation);
+
+	connection.pm_outgoing.Append(packet);
 }
 void MyClient::Update()
 {
-	PlayerCharacter::checkUpdateLevel();
+	clientGame.checkUpdateLevel();
 }
+
+
 void MyClient::OnConnect()
 {
 	std::cout << "Successfully connected to the server!" << std::endl;
 }
-
 bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 {
 	switch (packet->GetPacketType())
@@ -75,20 +73,54 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 		*packet >> type;
 		*packet >> id;
 
-		if (type == 4)
+
+		if (type == SEND_PLAYER_DATA)
+		{
+			if (id == clientID) break;
+
+			uint32_t index = NetworkClient::GetIndexByID(id);
+
+			// get all packets to the vector packets
+			vector<uint32_t> pakcets;
+			uint32_t packetUInt;
+
+			// subtract from size two elements (id, type)
+			for (uint32_t i = 0; i < arraySize - 2; ++i)
+			{
+				*packet >> packetUInt;
+				pakcets.push_back(packetUInt);
+			}
+			// apply the pakets to the game
+			clientGame.readPackets(pakcets, index);
+		}
+		else if (type == ADD_PLAYER)
+		{
+			if (id == clientID) break;
+			cout << "New Player ID: " << id << endl;
+			NetworkClient::networkClients.push_back(NetworkClient());
+			NetworkClient::networkClients.back().id = id;
+
+		}
+		else if (type == REMOVE_PLAYER)
+		{
+			if (id == clientID) break;
+			uint32_t index = NetworkClient::GetIndexByID(id);
+
+			NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + index);
+
+			cout << "UnMapped " << id << " TO " << index << "\n";
+		}
+		else if (type == CREATE_PLAYER)
 		{
 			// set id
-			if (myID == 0)
-			{
-				myID = id;
-				cout << "changed id" << endl;
-			}
-			cout << "Client ID: " << myID << endl;
+			clientID = id;
+			cout << "Client ID: " << clientID << endl;
 
-			//store the players
+			//store the players connected to server
 			uint32_t numOnlineClients;
 			uint32_t clientId = 0;
 			*packet >> numOnlineClients;
+
 			for (uint32_t i = 0; i < numOnlineClients; ++i)
 			{
 				*packet >> clientId;
@@ -96,57 +128,6 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 				NetworkClient::networkClients.back().id = clientId;
 			}
 			return true;
-		}
-
-		if (id == myID) return true;
-
-		if (type == 2)
-		{
-			cout << "Mapped " << id << endl;
-			NetworkClient::networkClients.push_back(NetworkClient());
-			NetworkClient::networkClients.back().id = id;
-
-		}
-
-		if (type == 3)
-		{
-			uint32_t index = 0;
-			for (int i = 0; i < NetworkClient::networkClients.size(); ++i)
-			{
-				if (id == NetworkClient::networkClients[i].id)
-				{
-					index = i;
-					break;
-				}
-			}
-			NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + index);
-			PlayerCharacter::playerCharacters[index].setIsUsed(false);
-			PlayerCharacter::playerCharacters[index].setId(0);
-
-			cout << "UnMapped " << id << " TO " << index << "\n";
-		}
-
-
-		if (type == 0)
-		{
-			uint32_t index = 0;
-			for (int i = 0; i < NetworkClient::networkClients.size(); ++i)
-			{
-				if (id == NetworkClient::networkClients[i].id)
-				{
-					index = i;
-					break;
-				}
-			}
-			vector<uint32_t> pakcets;
-			uint32_t packetUInt;
-
-			for(uint32_t i = 0; i < arraySize - 2; ++i)
-			{
-				*packet >> packetUInt;
-				pakcets.push_back(packetUInt);
-			}
-			PlayerCharacter::readPacket(pakcets, index);
 		}
 		break;
 	}
@@ -157,4 +138,3 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 
 	return true;
 }
-
