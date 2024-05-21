@@ -26,9 +26,9 @@ public:
 		setObjAddress(addressOfNPC);
 		setGUID(MemoryAccess::readData(0x8 + addressOfNPC));
 
-		updatePositionAddress();
-		updateRotationAddress();
-		updateAnimationAddress();
+		setPositionAddress();
+		setRotationAddress();
+		setAnimationAddress();
 
 		std::cout << std::endl;
 	}
@@ -87,7 +87,7 @@ private:
 
 	uint32_t guid;
 
-	void updatePositionAddress()
+	void setPositionAddress()
 	{
 		// general position X
 		uint32_t animAdd1 = getObjAddress();
@@ -101,7 +101,7 @@ private:
 		
 		std::cout << std::endl;
 	}
-	void updateRotationAddress()
+	void setRotationAddress()
 	{
 		
 		// general position X
@@ -115,7 +115,7 @@ private:
 		std::cout << "rotYAddress: " << rotyAddress << std::endl;
 		std::cout << std::endl;
 	}
-	void updateAnimationAddress()
+	void setAnimationAddress()
 	{
 		// animation
 		uint32_t animAdd1 = getObjAddress();

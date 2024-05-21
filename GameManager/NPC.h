@@ -2,6 +2,9 @@
 #include <vector>
 #include <windows.h>
 #include "MemoryAccess.h"
+#include "../PNet/ByteFunctions.h"
+
+
 class NPC
 {
 	
@@ -17,31 +20,49 @@ public:
 		setObjAddress(addressOfNPC);
 		setGUID(MemoryAccess::readData(0x8 + addressOfNPC));
 
-		updatePositionAddress();
-		updateRotationAddress();
-		updateAnimationAddress();
+		setPositionAddress();
+		setRotationAddress();
+		setAnimationAddress();
 
 		std::cout << std::endl;
 	}
 	// Object Address
 	uint32_t getObjAddress() { return objAddress; }
-	void setObjAddress(uint32_t newObjAddress) { objAddress = newObjAddress; }
+	void setObjAddress(uint32_t newObjAddress) 
+	{
+		objAddress = newObjAddress; 
+		std::cout << std::hex;
+		std::cout << "newObjAddress: " << newObjAddress;
+		std::cout << std::endl << std::dec;
+	}
 
 	// GUID
-	void setGUID(uint32_t newGUID) { guid = newGUID; }
+	void setGUID(uint32_t newGUID) 
+	{ 
+		guid = newGUID; 
+	}
 
 	// Position
 	void setPositionX(uint32_t newPosition)
 	{
-		MemoryAccess::writeData(posxAddress, newPosition);
+		for (uint32_t posXadd : posxAddress)
+		{
+			MemoryAccess::writeData(posXadd, newPosition);
+		}
 	}
 	void setPositionY(uint32_t newPosition)
 	{
-		MemoryAccess::writeData(0x4 + posxAddress, newPosition);
+		for (uint32_t posXadd : posxAddress)
+		{
+			MemoryAccess::writeData(0x4 + posXadd, newPosition);
+		}
 	}
 	void setPositionZ(uint32_t newPosition)
 	{
-		MemoryAccess::writeData(0x8 + posxAddress, newPosition);
+		for (uint32_t posXadd : posxAddress)
+		{
+			MemoryAccess::writeData(0x8 + posXadd, newPosition);
+		}
 	}
 
 
@@ -66,51 +87,78 @@ public:
 
 private:
 	uint32_t objAddress;
-	uint32_t posxAddress;
+	std::vector<uint32_t> posxAddress;
 	uint32_t rotyAddress;
 
 	uint32_t animAddress;
 
 	uint32_t guid;
 
-	void updatePositionAddress()
+	void setPositionAddress()
 	{
+		posxAddress.clear();
 		// general position X
+
+		std::vector<void*> tempPosXs;
+
+		uint32_t GUIDaddrs = getObjAddress();
+
+		posxAddress.push_back(0xC + GUIDaddrs);
+		//posxAddress.push_back(0xC + 0x4*3 + GUIDaddrs);
+		posxAddress.push_back(0x18 + GUIDaddrs);
+
 		uint32_t animAdd1 = getObjAddress();
-		posxAddress = uint32_t(0xC + uint32_t(animAdd1));
+		uint32_t animAdd2 = MemoryAccess::readData(0x304 - 0x8 + animAdd1);
+		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
+		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
+		animAddress = 0x8 + animAdd4;
+		posxAddress.push_back(-0xC4 + animAddress);
+		//posxAddress.push_back(-0xC4 + 0x9*0x4 + animAddress);
 
-
-		//dispplay the poistion Data
-		std::cout << "Position Data:" << std::endl;
-		std::cout << "posX: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(posxAddress)) << std::endl;
-		std::cout << "posXAddress: " << posxAddress << std::endl;
-
+		
+		std::cout << std::hex;
+		for (uint32_t posxAdd : posxAddress)
+		{
+			//dispplay the poistion Data
+			std::cout << "Position Data:" << std::endl;
+			std::cout << "posX: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(posxAdd)) << std::endl;
+			std::cout << "posXAddress: " << posxAdd << std::endl;
+		}
+		std::cout << std::dec;
 		std::cout << std::endl;
 	}
-	void updateRotationAddress()
+
+
+	void setRotationAddress()
 	{
 
 		// general position X
 		uint32_t animAdd1 = getObjAddress();
 		rotyAddress = uint32_t(0x64 + uint32_t(animAdd1));
 
-
 		//dispplay the poistion Data
+		std::cout << std::hex;
 		std::cout << "Rotation Data:" << std::endl;
 		std::cout << "rotY: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(rotyAddress)) << std::endl;
 		std::cout << "rotYAddress: " << rotyAddress << std::endl;
 		std::cout << std::endl;
+		std::cout << std::dec;
+
 	}
-	void updateAnimationAddress()
+	void setAnimationAddress()
 	{
+
 		// animation
 		uint32_t animAdd1 = getObjAddress();
-		uint32_t animAdd2 = MemoryAccess::readData(uint32_t(0x304 - 0x8 + uint32_t(animAdd1)));
-		uint32_t animAdd3 = MemoryAccess::readData(uint32_t(0x50 + uint32_t(animAdd2)));
-		uint32_t animAdd4 = MemoryAccess::readData(uint32_t(0x10C + uint32_t(animAdd3)));
-		animAddress = uint32_t(0x8 + uint32_t(animAdd4));
+		uint32_t animAdd2 = MemoryAccess::readData(0x304 - 0x8 + animAdd1);
+		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
+		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
+		animAddress = 0x8 + animAdd4;
+		std::cout << std::hex;
 		std::cout << "anim: " << MemoryAccess::readData(animAddress) << std::endl;
 		std::cout << "animAddress: " << animAddress << std::endl;
+		std::cout << std::endl;
+
 	}
 };
 
