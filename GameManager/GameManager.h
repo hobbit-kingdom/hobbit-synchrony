@@ -22,6 +22,10 @@ private:
     static void readGameState()
     {
         gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state
+        if (!checkGameOpen())
+        {
+            gameState = 0;
+        }
     }
     static void readGameLevel()
     {
@@ -81,7 +85,7 @@ public:
         }
 
     }
-
+    
     static void readPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) 
     {
         // convert packets into GamePackets

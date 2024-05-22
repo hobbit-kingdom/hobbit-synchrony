@@ -35,7 +35,7 @@ void MyServer::OnConnect(TCPConnection& newConnection)
 	*createPlayer << 2 << CREATE_PLAYER << NetworkClient::networkClients.back().id;
 	// send data about other clients, not including itself
 	*createPlayer << NetworkClient::networkClients.size() - 1;
-	for (int i = 0; i < NetworkClient::networkClients.size() - 1; ++i)
+	for (uint32_t i = 0; i < NetworkClient::networkClients.size() - 1; ++i)
 	{
 		*createPlayer << NetworkClient::networkClients[i].id;
 	}

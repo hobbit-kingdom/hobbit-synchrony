@@ -137,6 +137,7 @@ public:
 		BOOL bWriteSuccess = WriteProcessMemory(Process, Address, &data, dwSize, NULL);
 		VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
 		if (bWriteSuccess) return T(); // Return default value of type T if writing fails
+		return 0;
 	}
 	static void writeData(uint32_t Address, uint32_t data)
 	{
@@ -152,6 +153,12 @@ public:
 	// additional funcitons
 	static std::vector<void*> findBytePatternInProcessMemory(void* pattern, size_t patternLen);
 	static std::vector<uint32_t> findBytePatternInProcessMemory(const std::vector<uint32_t>& pattern);
+	static std::vector<uint32_t> findBytePatternInProcessMemory(uint32_t pattern) 
+	{
+		std::vector<uint32_t> tempPattern;
+		tempPattern.push_back(pattern);
+		return findBytePatternInProcessMemory(tempPattern);
+	};
 
 	static bool getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags);
 	static OppenedQuery initVirtualQuery(PROCESS process);

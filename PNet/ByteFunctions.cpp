@@ -77,6 +77,7 @@ int change_float_hobbit(LPVOID Address, float a)
 	BOOL bWriteSuccess = WriteProcessMemory(Process, Address, &Znachenie, dwSize, NULL);
 	VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
 	if (bWriteSuccess) return 0;
+	return 1;
 }
 
 
@@ -96,7 +97,7 @@ int change_1Byte_hobbit_no_switch(LPVOID Address, BYTE Znachenie)
 	BOOL bWriteSuccess = WriteProcessMemory(Process, Address, &Znachenie, dwSize, NULL);
 	VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
 	if (bWriteSuccess) return 0;
-
+	return 1;
 }
 
 DWORD findPidByName(const char* name)

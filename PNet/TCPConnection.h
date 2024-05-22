@@ -7,8 +7,18 @@ namespace PNet
 	class TCPConnection
 	{
 	public:
-		TCPConnection(Socket socket, IPEndpoint endpoint);
-		TCPConnection() :socket(Socket()) {}
+
+		TCPConnection(Socket socket, IPEndpoint endpoint)
+			: socket(socket), endpoint(endpoint)
+		{
+			stringRepresentation = endpoint.GetIPString();
+			std::fill(std::begin(buffer), std::end(buffer), 0);
+		}
+		TCPConnection(): socket(Socket())
+		{
+			std::fill(std::begin(buffer), std::end(buffer), 0);
+		}
+
 		void Close();
 		std::string ToString();
 		Socket socket;

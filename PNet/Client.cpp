@@ -196,6 +196,8 @@ namespace PNet
 			}
 			connection.pm_incoming.Clear();
 		}
+
+		return false;
 	}
 
 	bool Client::ProcessPacket(std::shared_ptr<Packet> packet)

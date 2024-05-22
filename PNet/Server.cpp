@@ -40,7 +40,7 @@ namespace PNet
 
 	void Server::Frame()
 	{
-		for (int i = 0; i < connections.size(); i++)
+		for (size_t i = 0; i < connections.size(); i++)
 		{
 			if (connections[i].pm_outgoing.HasPendingPackets())
 			{

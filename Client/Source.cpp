@@ -44,7 +44,7 @@ int main()
 			while (client.IsConnected())
 			{
 				client.Update();
-				float tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
+				uint64_t tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
 				client.Frame();
 				if (tim > 220)
 				{

@@ -72,13 +72,11 @@ public:
 		setPositionY(newPositionY);
 		setPositionZ(newPositionZ);
 	}
-
 	// Rotation
 	void setRotationY(uint32_t newRotation)
 	{
 		MemoryAccess::writeData(rotyAddress, newRotation);
 	}
-
 	// Animation
 	void setAnimation(uint32_t newAnimation)
 	{
@@ -97,9 +95,6 @@ private:
 	void setPositionAddress()
 	{
 		posxAddress.clear();
-		// general position X
-
-		std::vector<void*> tempPosXs;
 
 		uint32_t GUIDaddrs = getObjAddress();
 
@@ -127,8 +122,6 @@ private:
 		std::cout << std::dec;
 		std::cout << std::endl;
 	}
-
-
 	void setRotationAddress()
 	{
 

@@ -1,11 +1,16 @@
 #include "MemoryAccess.h"
 
+//@return name of attached executable
 std::string MemoryAccess::getExecutableName() {
 	return executableName;
 }
+
+// set executable name
 void MemoryAccess::setExecutableName(const std::string& newName) {
 	executableName = newName;
 }
+
+//@return current process
 HANDLE MemoryAccess::readProcess(const char* processName)
 {
 	DWORD pid = 0;
@@ -39,13 +44,15 @@ HANDLE MemoryAccess::readProcess(const char* processName)
 	HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 	return processHandle; // This may return NULL if OpenProcess fails
 }
-
+//@return current process
 HANDLE MemoryAccess::readProcess()
 {
 	if (executableName != "")
 		return MemoryAccess::readProcess(executableName.c_str());
 	return 0;
 }
+
+//@return processID by name of the process
 DWORD MemoryAccess::readProcessID(const char* name)
 {
 	HANDLE h;
@@ -75,13 +82,15 @@ DWORD MemoryAccess::readProcessID(const char* name)
 
 	return pid;
 }
-
+//@return processID of attached process
 DWORD MemoryAccess::readProcessID()
 {
 	if (executableName != "")
 		return MemoryAccess::readProcessID(executableName.c_str());
 	return 0;
 }
+
+//FindBytePatternInMemory
 
 OppenedQuery initVirtualQuery(HANDLE process)
 {
@@ -141,51 +150,26 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 }
 std::vector<uint32_t> MemoryAccess::findBytePatternInProcessMemory(const std::vector<uint32_t>& pattern)
 {
+	// If the pattern is empty, return an empty vector
 	if (pattern.empty()) { return {}; }
 
-	HANDLE process = MemoryAccess::readProcess();
+	// Convert the vector of uint32_t to a byte array
+	size_t patternLen = pattern.size() * sizeof(uint32_t);
+	std::vector<uint8_t> bytePattern(patternLen);
+	memcpy(bytePattern.data(), pattern.data(), patternLen);
 
-	std::vector<uint32_t> returnVec;
-	returnVec.reserve(1000);
+	// Call the original function
+	std::vector<void*> addresses = findBytePatternInProcessMemory(bytePattern.data(), patternLen);
 
-	auto query = initVirtualQuery(process);
-
-	if (!query.oppened())
-		return {};
-
-	void* low = nullptr;
-	void* hi = nullptr;
-	int flags = memQueryFlags_None;
-
-	while (getNextQuery(query, low, hi, flags))
+	// Convert the vector of void* to a vector of uint32_t
+	std::vector<uint32_t> result;
+	result.reserve(addresses.size());
+	for (void* addr : addresses)
 	{
-		if ((flags | memQueryFlags_Read) && (flags | memQueryFlags_Write))
-		{
-			//search for our byte pattern
-			size_t size = (char*)hi - (char*)low;
-			char* localCopyContents = new char[size];
-
-			SIZE_T readSize = 0;
-			if (ReadProcessMemory(process, low, localCopyContents, size, &readSize))
-			{
-				char* cur = localCopyContents;
-				size_t curPos = 0;
-				size_t patternLen = pattern.size() * sizeof(uint32_t);
-				while (curPos < size - patternLen + 1)
-				{
-					if (memcmp(cur, pattern.data(), patternLen) == 0)
-					{
-						returnVec.push_back(reinterpret_cast<uint32_t>((char*)low + curPos));
-					}
-					curPos++;
-					cur++;
-				}
-			}
-			delete[] localCopyContents;
-		}
+		result.push_back(reinterpret_cast<uint32_t>(addr));
 	}
 
-	return returnVec;
+	return result;
 }
 
 bool MemoryAccess::getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags)
