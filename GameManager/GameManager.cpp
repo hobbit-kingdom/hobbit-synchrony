@@ -4,4 +4,5 @@ std::vector<ClientEntity*> GameManager::clientEntities{ new MainPlayer(), new Ot
 
 // state of the game
 uint32_t GameManager::gameState;
+bool GameManager::levelLoaded;
 uint32_t GameManager::currentLevel;

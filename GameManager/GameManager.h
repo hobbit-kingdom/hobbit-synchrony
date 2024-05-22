@@ -17,6 +17,7 @@ private:
     
     
     static uint32_t gameState;
+    static bool levelLoaded;
     static uint32_t currentLevel;
 
     static void readGameState()
@@ -31,6 +32,11 @@ private:
     {
         currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level
     }
+    static void readLevelLoaded()
+    {
+        levelLoaded = !MemoryAccess::readData(0x0072C7D4);
+    }
+
 public:
     static void Start()
     {
@@ -50,13 +56,19 @@ public:
 
         // handle game states
         {
-            static uint32_t lastState;
+            // game state
+            static uint32_t previousState;
             static uint32_t currentState;
 
+            //lvl loaded
+            static bool previousLevelLoaded;
+            static bool currentLevelLoaded;
+
             currentState = getGameState();
+            currentLevelLoaded = getLevelLoaded();
 
             // 0xA: open level
-            if (lastState != currentState && currentState == 0xA)
+            if (previousLevelLoaded != currentLevelLoaded && currentLevelLoaded)
             {
                 // call enterNewLevel for all classes
                 for (ClientEntity* e : clientEntities)
@@ -64,8 +76,9 @@ public:
                     e->EnterNewLevel();
                 }
             }
+
             // exit level
-            if (lastState == 0xA && currentState != 0xA)
+            if (previousState == 0xA && currentState != 0xA)
             {
                 // call enterNewLevel for all classes
                 for (ClientEntity* e : clientEntities)
@@ -73,7 +86,8 @@ public:
                     e->ExitLevel();
                 }
             }
-            lastState = currentState;
+            previousState = currentState;
+            previousLevelLoaded = currentLevelLoaded;
         }
 
         // handle Update event
@@ -137,6 +151,7 @@ public:
     static void readInstanices()
     {
         readGameState();
+        readLevelLoaded();
         readGameLevel();
     }
     
@@ -144,6 +159,10 @@ public:
     static uint32_t getGameState()
     {
         return gameState;
+    }
+    static bool getLevelLoaded()
+    {
+        return levelLoaded;
     }
     static uint32_t getGameLevel()
     {
