@@ -13,16 +13,9 @@ enum PackT : uint32_t {
 
 unordered_map<string, int> ipToId = {  };
 
-ClientGame clientGame;
 MyClient::MyClient()
 {
-	string s;
-	while (!clientGame.checkInGame())
-	{
-		cout << "Press [y] when the Hobbit_2003 is open: ";
-		cin >> s;
-	}
-	clientGame.openNewLevel();
+	GameManager::Start();
 }
 void MyClient::SendPacket() {
 
@@ -31,7 +24,7 @@ void MyClient::SendPacket() {
 
 	std::shared_ptr<Packet> packet = std::make_shared<Packet>(PacketType::PT_IntegerArray);
 	// set the packets
-	vector<uint32_t> packets = clientGame.setPackets();
+	vector<uint32_t> packets = GameManager::setPackets();
 	// calculate the size, type of the packet, id
 	*packet << 2 + uint32_t(packets.size()) << SEND_PLAYER_DATA << clientID;
 
@@ -45,7 +38,7 @@ void MyClient::SendPacket() {
 }
 void MyClient::Update()
 {
-	clientGame.checkUpdateLevel();
+	GameManager::Update();
 }
 
 
@@ -91,7 +84,7 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 				pakcets.push_back(packetUInt);
 			}
 			// apply the pakets to the game
-			clientGame.readPackets(pakcets, index);
+			GameManager::readPackets(pakcets, index);
 		}
 		else if (type == ADD_PLAYER)
 		{

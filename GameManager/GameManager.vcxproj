@@ -128,7 +128,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ClientEntity.h" />
-    <ClInclude Include="ClientGame.h" />
+    <ClInclude Include="GameManager.h" />
+    <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="NPC.h" />
@@ -136,7 +137,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClientEntity.cpp" />
-    <ClCompile Include="ClientGame.cpp" />
+    <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainPlayer.cpp" />
     <ClCompile Include="MemoryAccess.cpp" />

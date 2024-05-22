@@ -72,6 +72,7 @@ public:
 		// set animation
 		otherPlayer.setAnimation(animBilbo);
 	}
+
 	void ReadPtrs() override {
 		uint32_t arrayStartAddress = MemoryAccess::readData(0x0076F648);//0x0076F648 array address
 		otherPlayers.clear();
@@ -82,5 +83,6 @@ public:
 			otherPlayers.push_back(NPC(addressFBilbo));
 		}
 	};
+
 	virtual void EnterNewLevel() { ReadPtrs(); }
 };

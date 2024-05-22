@@ -1,8 +1,10 @@
 #pragma once
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
-#include <vector>
+
 #include "../PNet/IncludeMe.h"
+
+#include <vector>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <windows.h>

@@ -13,38 +13,41 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ClientEntity">
+      <UniqueIdentifier>{4d72f520-6ce3-4d88-aa96-c1d291d46e30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ClientEntity\headers">
+      <UniqueIdentifier>{a091dcf1-d888-4d8b-99b3-0bd00fec6fe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ClientEntity\sources">
+      <UniqueIdentifier>{cb96641d-ec0d-4bce-bc1e-1b017d6b6ff0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ClientGame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MainPlayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NPC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OtherPlayer.h">
+      <Filter>ClientEntity\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GameManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientEntity.h">
+      <Filter>ClientEntity\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MemoryAccess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClientEntity.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="MainPlayer.h">
+      <Filter>ClientEntity\headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ClientGame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NPC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoryAccess.cpp">
@@ -53,7 +56,19 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ClientEntity.cpp">
+      <Filter>ClientEntity\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="MainPlayer.cpp">
+      <Filter>ClientEntity\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayer.cpp">
+      <Filter>ClientEntity\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStateManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

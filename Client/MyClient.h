@@ -1,6 +1,8 @@
 #pragma once
 #include <PNet/IncludeMe.h>
-#include "../GameManager/ClientGame.h"
+
+#include "../GameManager/GameManager.h"
+
 #include "../PNet/NetworkClient.h"
 #include <windows.h>
 #include <fstream>
