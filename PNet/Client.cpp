@@ -347,13 +347,8 @@ namespace PNet
 			}
 
 			// Process all pending incoming packets
-			while (true)
+			while (connection.pm_incoming.HasPendingPackets())
 			{
-				if (!connection.pm_incoming.HasPendingPackets())
-				{
-					connection.pm_incoming.Clear();
-					break;
-				}
 				std::shared_ptr<Packet> packet = connection.pm_incoming.Retrieve();
 				packets.push_back(packet);
 				connection.pm_incoming.Pop(); // Remove the packet from the queue
