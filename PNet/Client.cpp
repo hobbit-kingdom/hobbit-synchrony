@@ -347,6 +347,7 @@ namespace PNet
 			}
 
 			// Process all pending incoming packets
+			std::vector<std::shared_ptr<Packet>> packets;
 			while (connection.pm_incoming.HasPendingPackets())
 			{
 				std::shared_ptr<Packet> packet = connection.pm_incoming.Retrieve();
