@@ -1,32 +1,56 @@
 #pragma once
 #include "MemoryAccess.h"
-#include "GameStateManager.h"
 #include "ClientEntity.h"
 
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
-#include <vector>
 
-class GameManager : protected GameStateManager, protected ClientEntity
+#include <vector>
+//0x00760864: loading layers
+
+class GameManager : protected ClientEntity
 {
 private:
+    // All derived classes
     static std::vector<ClientEntity*> clientEntities;
-    // add more as new classes made
-
-public:
     
+    
+    static uint32_t gameState;
+    static uint32_t currentLevel;
+
+    static void readGameState()
+    {
+        gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state
+    }
+    static void readGameLevel()
+    {
+        currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level
+    }
+public:
+    static void Start()
+    {
+        // check if the game is open
+        std::string s;
+        while (!checkGameOpen())
+        {
+            std::cout << "Press [y] when the Hobbit_2003 is open: ";
+            std::cin >> s;
+        }
+        //
+        readInstanices();
+    }
     static void Update()
     {
-        GameStateManager::readInstanices();
+        readInstanices();
 
-        // handle new level event
+        // handle game states
         {
             static uint32_t lastState;
             static uint32_t currentState;
 
-            currentState = GameStateManager::getGameState();
+            currentState = getGameState();
 
-            // 0xE: open level
+            // 0xA: open level
             if (lastState != currentState && currentState == 0xA)
             {
                 // call enterNewLevel for all classes
@@ -35,8 +59,18 @@ public:
                     e->EnterNewLevel();
                 }
             }
+            // exit level
+            if (lastState == 0xA && currentState != 0xA)
+            {
+                // call enterNewLevel for all classes
+                for (ClientEntity* e : clientEntities)
+                {
+                    e->ExitLevel();
+                }
+            }
             lastState = currentState;
         }
+
         // handle Update event
         {
             for (ClientEntity* e : clientEntities)
@@ -44,16 +78,7 @@ public:
                 e->Update();
             }
         }
-    }
-    static void Start()
-    {
-        std::string s;
-        while (!checkGameOpen())
-        {
-            std::cout << "Press [y] when the Hobbit_2003 is open: ";
-            std::cin >> s;
-        }
-        readInstanices();
+
     }
 
     static void readPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) 
@@ -119,18 +144,43 @@ public:
     }
     static std::vector<uint32_t> setPackets()
     {
-
-        std::vector<uint32_t> packets;
+        std::vector<uint32_t> packets;      // packets to send
+        std::vector<uint32_t> entityPackets;// entity packets
 
         // get packets from all entities
         for (ClientEntity* e : clientEntities)
         {
-            e->SetPackets(packets);
+            entityPackets = e->SetPackets();
+            // Add all elements from `entityPackets` to `packets` at the end of packets
+            packets.insert(packets.end(), entityPackets.begin(), entityPackets.end());
         }
 
         // end of packets
         packets.push_back(ClientEntity::PACKAGE_FLAG);
         packets.push_back(ClientEntity::PACKAGE_FLAG);
+
         return packets;
+    }
+
+
+    static bool checkGameOpen()
+    {
+        MemoryAccess::setExecutableName("Meridian.exe");
+        return MemoryAccess::readProcess();
+    }
+    static void readInstanices()
+    {
+        readGameState();
+        readGameLevel();
+    }
+    
+
+    static uint32_t getGameState()
+    {
+        return gameState;
+    }
+    static uint32_t getGameLevel()
+    {
+        return currentLevel;
     }
 };

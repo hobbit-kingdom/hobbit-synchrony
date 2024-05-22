@@ -6,15 +6,17 @@
 class OtherPlayer : public ClientEntity
 {
 private:
-	static const std::vector<uint32_t> GUIDs;//[initialize]
+	static const std::vector<uint32_t> GUIDs;
 	static std::vector<NPC> otherPlayers;
+	bool processPackets;
 public:
-	OtherPlayer():ClientEntity()
-	{
-		std::cout << "~OtherPlayer Constructor" << std::endl;
-	}
+	
+	// packages
 	void ReadPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) override
 	{
+		if (!processPackets)
+			return;
+
 		NPC& otherPlayer = otherPlayers[playerIndex];
 		if (packets.empty())
 			return;
@@ -72,7 +74,31 @@ public:
 		// set animation
 		otherPlayer.setAnimation(animBilbo);
 	}
-	void ReadPtrs() override {
+	std::vector<uint32_t> SetPackets() override
+	{
+		if (!processPackets)
+			return std::vector<uint32_t>();
+		// sets packets to send
+		return std::vector<uint32_t>();
+	}
+
+	// game events
+	void Update() override
+	{
+		// calls each frame
+	}
+	void EnterNewLevel() override
+	{
+		ReadPtrs();
+	}
+	void ExitLevel() override
+	{
+		processPackets = false;
+	}
+
+	// reads pointers data (you call it when enter new level)
+	void ReadPtrs() override 
+	{
 		uint32_t arrayStartAddress = MemoryAccess::readData(0x0076F648);//0x0076F648 array address
 		otherPlayers.clear();
 
@@ -82,5 +108,4 @@ public:
 			otherPlayers.push_back(NPC(addressFBilbo));
 		}
 	};
-	virtual void EnterNewLevel() { ReadPtrs(); }
 };
