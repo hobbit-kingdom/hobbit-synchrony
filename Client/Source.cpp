@@ -45,7 +45,7 @@ int main()
 			{
 				client.Update();
 				uint64_t tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
-				client.Frame();
+				client.FrameOnePacket();
 				if (tim > 220)
 				{
 					start = high_resolution_clock::now();

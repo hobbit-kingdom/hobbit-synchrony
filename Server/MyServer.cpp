@@ -103,15 +103,23 @@ bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 
 		if (type == SEND_PLAYER_DATA)
 		{
+
 			std::shared_ptr<Packet> positonPacket = std::make_shared<Packet>(PacketType::PT_IntegerArray);
 			uint32_t packetUInt;
-
+			
+			cout << "\033[31mNew Packet\033[0m" << std::endl;
+			cout << arraySize << ' ';
+			cout << type << ' ';
+			cout << "\033[33m" << id << "\033[0m" << ' ';
+			cout << std::endl;
+			cout << "\033[32mData\033[0m" << std::endl;
 
 			*positonPacket << arraySize << type << id;
 			// subtract from size two elements (id, type)
 			for (uint32_t i = 0; i < arraySize - 2; ++i)
 			{
 				*packet >> packetUInt;
+				cout << packetUInt << ' ';
 				*positonPacket << packetUInt;
 			}
 
@@ -119,6 +127,7 @@ bool MyServer::ProcessPacket(std::shared_ptr<Packet> packet)
 			{
 				connection.pm_outgoing.Append(positonPacket);
 			}
+			cout << std::endl;
 		}
 		break;
 	}

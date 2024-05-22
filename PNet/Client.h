@@ -9,6 +9,7 @@ namespace PNet
 		bool Connect(IPEndpoint ip);
 		bool IsConnected();
 		bool Frame();
+		bool FrameOnePacket();
 		void SendPacket();
 	protected:
 		virtual bool ProcessPacket(std::shared_ptr<Packet> packet);

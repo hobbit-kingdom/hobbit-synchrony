@@ -18,7 +18,7 @@ int main()
             {
                 server.Frame();
                 uint64_t tim = duration_cast<milliseconds>(high_resolution_clock::now() - start).count();
-                if (tim > 20)
+                if (tim > 220)
                 {
                     start = high_resolution_clock::now();
                     server.SendPackets();

@@ -23,6 +23,16 @@ namespace PNet
 		return p; //Return packet that was removed from the queue
 	}
 
+	std::shared_ptr<Packet> PacketManager::RetrieveLast()
+	{
+		if (!packets.empty())
+		{
+			return packets.back();
+		}
+		return nullptr;
+	}
+
+	
 	void PacketManager::Pop()
 	{
 		packets.pop(); //Remove packet from front of queue
