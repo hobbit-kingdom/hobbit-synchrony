@@ -1,8 +1,13 @@
 #pragma once
-#include "NPC.h"
+#include "MemoryAccess.h"
 #include "ClientEntity.h"
+#include "GamePacket.h"
+
+#include "NPC.h"
+
 #include <vector>
 #include <cstdint>
+
 class OtherPlayer : public ClientEntity
 {
 private:
@@ -12,43 +17,53 @@ private:
 public:
 	
 	// packages
-	void ReadPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) override
+	void ReadPackets(GamePacket gamePaket, uint32_t playerIndex) override
 	{
-		if (!processPackets)
-			return;
-
+		// Get Players characters
 		NPC& otherPlayer = otherPlayers[playerIndex];
-		if (packets.empty())
-			return;
 
-		// check type
-		if (packets.front() != 0x1)
+		// Check type
+		if (gamePaket.getPacketType() != 0x1)
 		{
-			packets.erase(packets.begin());
 			return;
 		}
-		packets.erase(packets.begin());
-
-		// check size
-		if (packets.front() == 0)
+		// Check size
+		if (gamePaket.getGameDataSize() == 0)
 		{
-			packets.erase(packets.begin());
 			return;
 		}
-		packets.erase(packets.begin());
+
+		// Not processing packets state
+		if (!processPackets)
+		{
+			return;
+		}
+
+		std::vector<uint32_t> gameData = gamePaket.getGameData();
+		
+		// Read Packet Game Data
+		uint32_t uintPosX = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t uintPosY = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t uintPosZ = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t uintRotY = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t animBilbo = gameData.front();
+		gameData.erase(gameData.begin());
 
 
-		uint32_t uintPosX = packets.front();
-		packets.erase(packets.begin());
-		uint32_t uintPosY = packets.front();
-		packets.erase(packets.begin());
-		uint32_t uintPosZ = packets.front();
-		packets.erase(packets.begin());
-		uint32_t uintRotY = packets.front();
-		packets.erase(packets.begin());
-		uint32_t animBilbo = packets.front();
-		packets.erase(packets.begin());
+		// Apply data from Packets
+		
+		//set position, rotation, and animation
+		otherPlayer.setPositionX(uintPosX);
+		otherPlayer.setPositionY(uintPosY);
+		otherPlayer.setPositionZ(uintPosZ);
+		otherPlayer.setRotationY(uintRotY);
+		otherPlayer.setAnimation(animBilbo);
 
+		// Display the data
 		std::cout << "\033[33m";
 		std::cout << "Recieve the packet Send: " << std::endl;
 		std::cout << "X: " << MemoryAccess::uint32ToFloat(uintPosX) << " || ";
@@ -57,38 +72,24 @@ public:
 		std::cout << "R: " << MemoryAccess::uint32ToFloat(uintRotY) << " || ";
 		std::cout << "A: " << animBilbo << std::endl << std::endl;
 		std::cout << "\033[0m";
-
-
-		// set x position
-		otherPlayer.setPositionX(uintPosX);
-
-		// set y position
-		otherPlayer.setPositionY(uintPosY);
-
-		// set z position
-		otherPlayer.setPositionZ(uintPosZ);
-
-		// set y rotation
-		otherPlayer.setRotationY(uintRotY);
-
-		// set animation
-		otherPlayer.setAnimation(animBilbo);
 	}
-	std::vector<uint32_t> SetPackets() override
+	GamePacket SetPackets() override
 	{
 		if (!processPackets)
-			return std::vector<uint32_t>();
+			return GamePacket();
+
 		// sets packets to send
-		return std::vector<uint32_t>();
+		return GamePacket();
 	}
 
 	// game events
 	void Update() override
 	{
-		// calls each frame
+		// updates every frame
 	}
 	void EnterNewLevel() override
 	{
+		processPackets = true;
 		ReadPtrs();
 	}
 	void ExitLevel() override

@@ -185,6 +185,17 @@ namespace PNet
 			}
 			connection.pm_incoming.Pop();
 		}
+
+		while (connection.pm_incoming.HasPendingPackets())
+		{
+			std::shared_ptr<Packet> frontPacket = connection.pm_incoming.Retrieve();
+			if (!ProcessPacket(frontPacket))
+			{
+				CloseConnection("Failed to process incoming packet.");
+				return false;
+			}
+			connection.pm_incoming.Clear();
+		}
 	}
 
 	bool Client::ProcessPacket(std::shared_ptr<Packet> packet)

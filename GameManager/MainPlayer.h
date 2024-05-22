@@ -1,6 +1,7 @@
 #pragma once
 #include "MemoryAccess.h"
 #include "ClientEntity.h"
+#include "GamePacket.h"
 
 #include <vector>
 #include <cstdint>
@@ -17,17 +18,17 @@ private:
 public:
 
     // packages
-    void ReadPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) override
+    void ReadPackets(GamePacket gamePacket, uint32_t playerIndex) override
     {
         if (!processPackets)
             return;
         // read packets
     }
-    std::vector<uint32_t> SetPackets() override
+    GamePacket SetPackets() override
     {
         if (!processPackets)
-            return std::vector<uint32_t>();
-        std::vector<uint32_t> packets;
+            return GamePacket();
+
         // Prepares packets to send
         uint32_t uintPosX = MemoryAccess::readData(0x7C4 + bilboPosXPTR);
         uint32_t uintPosY = MemoryAccess::readData(0x7C8 + bilboPosXPTR);
@@ -36,16 +37,13 @@ public:
         uint32_t animBilbo = MemoryAccess::readData(bilboAnimPTR);
 
         // Set the packet
-        packets.push_back(0x1); // reader: OtherPlayers 0x0
+        GamePacket gamePacket(0x1, 0x1);// first is reader, second is type
 
-        packets.push_back(0x1); // type 0x1: position, rotation and animation
-        packets.push_back(0x5); // number of elements pushed
-
-        packets.push_back(uintPosX);
-        packets.push_back(uintPosY);
-        packets.push_back(uintPosZ);
-        packets.push_back(uintRotY);
-        packets.push_back(animBilbo);
+        gamePacket.pushBackGamePacket(uintPosX);
+        gamePacket.pushBackGamePacket(uintPosY);
+        gamePacket.pushBackGamePacket(uintPosZ);
+        gamePacket.pushBackGamePacket(uintRotY);
+        gamePacket.pushBackGamePacket(animBilbo);
 
         // Display the packets
         std::cout << "\033[32m";
@@ -57,7 +55,7 @@ public:
         std::cout << "A: " << animBilbo << std::endl << std::endl;
         std::cout << "\033[0m";
 
-        return packets;
+        return gamePacket;
     }
 
     // game events

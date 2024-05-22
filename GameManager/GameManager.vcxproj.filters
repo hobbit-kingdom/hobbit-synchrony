@@ -27,19 +27,25 @@
     <ClInclude Include="NPC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OtherPlayer.h">
-      <Filter>ClientEntity\headers</Filter>
-    </ClInclude>
     <ClInclude Include="GameManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryAccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameStateManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePacket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClientEntity.h">
       <Filter>ClientEntity\headers</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryAccess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MainPlayer.h">
+      <Filter>ClientEntity\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherPlayer.h">
       <Filter>ClientEntity\headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -61,6 +67,15 @@
     </ClCompile>
     <ClCompile Include="OtherPlayer.cpp">
       <Filter>ClientEntity\sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GameStateManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePacket.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -110,16 +110,7 @@ public:
         }
 
         // end of packets
-        std::vector<uint32_t> processedGamePacket;
-        for (GamePacket gamePacket : gamePackets)
-        {
-            processedGamePacket = gamePacket.getPacket();
-            packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
-        }
-
-        //indicate the end of packet
-        processedGamePacket = GamePacket::lastPacket();
-        packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
+        gamePackets.back().endPacket();
 
         return packets;
     }
