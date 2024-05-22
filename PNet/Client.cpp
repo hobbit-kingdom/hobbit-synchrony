@@ -174,26 +174,33 @@ namespace PNet
 			}
 		}
 
-
+		// Loop while there are pending packets in the incoming packet manager
 		while (connection.pm_incoming.HasPendingPackets())
 		{
+			// Retrieve the front packet from the incoming packet manager
 			std::shared_ptr<Packet> frontPacket = connection.pm_incoming.Retrieve();
+			// Process the retrieved packet, close connection if processing fails
 			if (!ProcessPacket(frontPacket))
 			{
 				CloseConnection("Failed to process incoming packet.");
 				return false;
 			}
+			// Remove the front packet from the packet manager
 			connection.pm_incoming.Pop();
 		}
 
+		// Loop while there are pending packets in the incoming packet manager
 		while (connection.pm_incoming.HasPendingPackets())
 		{
+			// Retrieve the front packet from the incoming packet manager
 			std::shared_ptr<Packet> frontPacket = connection.pm_incoming.Retrieve();
+			// Process the retrieved packet, close connection if processing fails
 			if (!ProcessPacket(frontPacket))
 			{
 				CloseConnection("Failed to process incoming packet.");
 				return false;
 			}
+			// Clear all packets from the packet manager
 			connection.pm_incoming.Clear();
 		}
 
@@ -203,8 +210,7 @@ namespace PNet
 
 	bool Client::FrameOnePacket()
 	{
-		while (true)
-		{
+
 			if (connection.pm_outgoing.HasPendingPackets())
 			{
 				master_fd.events = POLLRDNORM | POLLWRNORM;
@@ -212,144 +218,152 @@ namespace PNet
 
 			use_fd = master_fd;
 
-			if (WSAPoll(&use_fd, 1, 1) > 0)
+			// read the buffer
+			while (true)
 			{
-				if (use_fd.revents & POLLERR)
+				if (WSAPoll(&use_fd, 1, 1) > 0)
 				{
-					CloseConnection("POLLERR");
-					return false;
-				}
-
-				if (use_fd.revents & POLLHUP)
-				{
-					CloseConnection("POLLHUP");
-					return false;
-				}
-
-				if (use_fd.revents & POLLNVAL)
-				{
-					CloseConnection("POLLNVAL");
-					return false;
-				}
-
-				if (use_fd.revents & POLLRDNORM)
-				{
-					int bytesReceived = 0;
-
-					if (connection.pm_incoming.currentTask == PacketManagerTask::ProcessPacketSize)
+					if (use_fd.revents & POLLERR)
 					{
-						bytesReceived = recv(use_fd.fd, (char*)&connection.pm_incoming.currentPacketSize + connection.pm_incoming.currentPacketExtractionOffset, sizeof(uint16_t) - connection.pm_incoming.currentPacketExtractionOffset, 0);
-					}
-					else
-					{
-						bytesReceived = recv(use_fd.fd, (char*)&connection.buffer + connection.pm_incoming.currentPacketExtractionOffset, connection.pm_incoming.currentPacketSize - connection.pm_incoming.currentPacketExtractionOffset, 0);
-					}
-
-					if (bytesReceived == 0)
-					{
+						CloseConnection("POLLERR");
 						return false;
-						CloseConnection("Recv==0");
 					}
 
-					if (bytesReceived == SOCKET_ERROR)
+					else if (use_fd.revents & POLLHUP)
 					{
-						int error = WSAGetLastError();
-						if (error != WSAEWOULDBLOCK)
-						{
-							CloseConnection("Recv<0");
-							return false;
-						}
+						CloseConnection("POLLHUP");
+						return false;
 					}
 
-					if (bytesReceived > 0) // If data was received successfully
+					else if (use_fd.revents & POLLNVAL)
 					{
-						connection.pm_incoming.currentPacketExtractionOffset += bytesReceived; // Update the extraction offset
+						CloseConnection("POLLNVAL");
+						return false;
+					}
+
+					else if (use_fd.revents & POLLRDNORM)
+					{
+						int bytesReceived = 0;
 
 						if (connection.pm_incoming.currentTask == PacketManagerTask::ProcessPacketSize)
 						{
-							// If the current task is to process the packet size
-							if (connection.pm_incoming.currentPacketExtractionOffset == sizeof(uint16_t))
-							{
-								// If we have received enough bytes to determine the packet size
-								connection.pm_incoming.currentPacketSize = ntohs(connection.pm_incoming.currentPacketSize); // Convert packet size from network to host byte order
-
-								if (connection.pm_incoming.currentPacketSize > PNet::g_MaxPacketSize)
-								{
-									// If the packet size exceeds the maximum allowed size
-									CloseConnection("Packet size too large."); // Close the connection due to large packet size
-									return false; // Return false to indicate an error
-								}
-
-								connection.pm_incoming.currentPacketExtractionOffset = 0; // Reset the extraction offset
-								connection.pm_incoming.currentTask = PacketManagerTask::ProcessPacketContents; // Move to the next task: processing packet contents
-							}
+							bytesReceived = recv(use_fd.fd, (char*)&connection.pm_incoming.currentPacketSize + connection.pm_incoming.currentPacketExtractionOffset, sizeof(uint16_t) - connection.pm_incoming.currentPacketExtractionOffset, 0);
 						}
 						else
 						{
-							// If the current task is to process the packet contents
-							if (connection.pm_incoming.currentPacketExtractionOffset == connection.pm_incoming.currentPacketSize)
+							bytesReceived = recv(use_fd.fd, (char*)&connection.buffer + connection.pm_incoming.currentPacketExtractionOffset, connection.pm_incoming.currentPacketSize - connection.pm_incoming.currentPacketExtractionOffset, 0);
+						}
+
+						if (bytesReceived == 0)
+						{
+							CloseConnection("Recv==0");
+						}
+
+						if (bytesReceived == SOCKET_ERROR)
+						{
+							int error = WSAGetLastError();
+							if (error != WSAEWOULDBLOCK)
 							{
-								// If we have received the entire packet
-								std::shared_ptr<Packet> packet = std::make_shared<Packet>(); // Create a new packet
-								packet->buffer.resize(connection.pm_incoming.currentPacketSize + 2); // Resize the packet buffer to accommodate the packet size and header
-								memcpy(&packet->buffer[2], connection.buffer, connection.pm_incoming.currentPacketSize); // Copy the received packet data into the packet buffer
+								CloseConnection("Recv<0");
+								return false;
+							}
+						}
 
-								connection.pm_incoming.Append(packet); // Append the packet to the incoming packet manager
+						if (bytesReceived > 0) // If data was received successfully
+						{
+							connection.pm_incoming.currentPacketExtractionOffset += bytesReceived; // Update the extraction offset
 
-								connection.pm_incoming.currentPacketSize = 0; // Reset the current packet size
-								connection.pm_incoming.currentPacketExtractionOffset = 0; // Reset the extraction offset
-								connection.pm_incoming.currentTask = PacketManagerTask::ProcessPacketSize; // Move back to the task of processing packet size for the next packet
+							if (connection.pm_incoming.currentTask == PacketManagerTask::ProcessPacketSize)
+							{
+								// If the current task is to process the packet size
+								if (connection.pm_incoming.currentPacketExtractionOffset == sizeof(uint16_t))
+								{
+									// If we have received enough bytes to determine the packet size
+									connection.pm_incoming.currentPacketSize = ntohs(connection.pm_incoming.currentPacketSize); // Convert packet size from network to host byte order
+
+									if (connection.pm_incoming.currentPacketSize > PNet::g_MaxPacketSize)
+									{
+										// If the packet size exceeds the maximum allowed size
+										CloseConnection("Packet size too large."); // Close the connection due to large packet size
+										return false; // Return false to indicate an error
+									}
+
+									connection.pm_incoming.currentPacketExtractionOffset = 0; // Reset the extraction offset
+									connection.pm_incoming.currentTask = PacketManagerTask::ProcessPacketContents; // Move to the next task: processing packet contents
+								}
+							}
+							else
+							{
+								// If the current task is to process the packet contents
+								if (connection.pm_incoming.currentPacketExtractionOffset == connection.pm_incoming.currentPacketSize)
+								{
+									// If we have received the entire packet
+									std::shared_ptr<Packet> packet = std::make_shared<Packet>(); // Create a new packet
+									packet->buffer.resize(connection.pm_incoming.currentPacketSize + 2); // Resize the packet buffer to accommodate the packet size and header
+									memcpy(&packet->buffer[2], connection.buffer, connection.pm_incoming.currentPacketSize); // Copy the received packet data into the packet buffer
+
+									connection.pm_incoming.Append(packet); // Append the packet to the incoming packet manager
+
+									connection.pm_incoming.currentPacketSize = 0; // Reset the current packet size
+									connection.pm_incoming.currentPacketExtractionOffset = 0; // Reset the extraction offset
+									connection.pm_incoming.currentTask = PacketManagerTask::ProcessPacketSize; // Move back to the task of processing packet size for the next packet
+								}
 							}
 						}
 					}
-				}
 
-				if (use_fd.revents & POLLWRNORM)
-				{
-					PacketManager& pm = connection.pm_outgoing;
-					while (pm.HasPendingPackets())
+					else if (use_fd.revents & POLLWRNORM)
 					{
-						char* bufferPtr = &pm.Retrieve()->buffer[0];
-						pm.currentPacketSize = pm.Retrieve()->buffer.size();
-						int bytesSent = send(use_fd.fd, (char*)(bufferPtr)+pm.currentPacketExtractionOffset, pm.currentPacketSize - pm.currentPacketExtractionOffset, 0);
-						if (bytesSent > 0)
+						PacketManager& pm = connection.pm_outgoing;
+						while (pm.HasPendingPackets())
 						{
-							pm.currentPacketExtractionOffset += bytesSent;
-						}
+							char* bufferPtr = &pm.Retrieve()->buffer[0];
+							pm.currentPacketSize = pm.Retrieve()->buffer.size();
+							int bytesSent = send(use_fd.fd, (char*)(bufferPtr)+pm.currentPacketExtractionOffset, pm.currentPacketSize - pm.currentPacketExtractionOffset, 0);
+							if (bytesSent > 0)
+							{
+								pm.currentPacketExtractionOffset += bytesSent;
+							}
 
-						if (pm.currentPacketExtractionOffset == pm.Retrieve()->buffer.size())
-						{
-							pm.currentPacketExtractionOffset = 0;
-							pm.Pop();
+							if (pm.currentPacketExtractionOffset == pm.Retrieve()->buffer.size())
+							{
+								pm.currentPacketExtractionOffset = 0;
+								pm.Pop();
+							}
+							else
+							{
+								break;
+							}
 						}
-						else
+						if (!connection.pm_outgoing.HasPendingPackets())
 						{
+							master_fd.events = POLLRDNORM;
 							break;
 						}
 					}
-					if (!connection.pm_outgoing.HasPendingPackets())
-					{
-						master_fd.events = POLLRDNORM;
-					}
+					else break;
 				}
+				else break;
 			}
 
-			// Process only the last pending incoming packet
-			if (connection.pm_incoming.HasPendingPackets())
+			// Process all pending incoming packets
+			while (true)
 			{
-				std::shared_ptr<Packet> lastPacket = connection.pm_incoming.RetrieveLast();
-				if (!ProcessPacket(lastPacket))
+				if (!connection.pm_incoming.HasPendingPackets())
+				{
+					connection.pm_incoming.Clear();
+					break;
+				}
+				std::shared_ptr<Packet> packet = connection.pm_incoming.Retrieve();
+				packets.push_back(packet);
+				connection.pm_incoming.Pop(); // Remove the packet from the queue
+
+				if (!ProcessPacket(packet))
 				{
 					CloseConnection("Failed to process incoming packet.");
 					return false;
 				}
-				connection.pm_incoming.Clear(); // Clear the incoming queue after processing the last packet
-			}
-			else
-			{
-				return true;
-			}
-		}
+			}		
     return true;
 }
 
