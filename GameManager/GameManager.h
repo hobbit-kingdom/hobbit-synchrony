@@ -15,43 +15,63 @@ private:
     // All derived classes
     static std::vector<ClientEntity*> clientEntities;
     
-    
+
     static uint32_t gameState;
     static bool levelLoaded;
     static uint32_t currentLevel;
 
     static void readGameState()
     {
-        gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state
-        if (!checkGameOpen())
-        {
-            gameState = 0;
-        }
+        gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state address
     }
     static void readGameLevel()
     {
-        currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level
+        currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level address
     }
     static void readLevelLoaded()
     {
-        levelLoaded = !MemoryAccess::readData(0x0072C7D4);
+        levelLoaded = !MemoryAccess::readData(0x0072C7D4);  //0x0072C7D4: is loaded level address
+    }
+
+
+    static uint32_t getGameState()
+    {
+        return gameState;
+    }
+    static bool getLevelLoaded()
+    {
+        return levelLoaded;
+    }
+    static uint32_t getGameLevel()
+    {
+        return currentLevel;
+    }
+
+
+    static bool checkGameOpen()
+    {
+        MemoryAccess::setExecutableName("Meridian.exe");
+        return MemoryAccess::readProcess();
+    }
+    static void readInstanices()
+    {
+        readGameState();
+        readLevelLoaded();
+        readGameLevel();
     }
 
 public:
     static void Start()
     {
-        // check if the game is open
-        std::string s;
-        while (!checkGameOpen())
-        {
-            std::cout << "Press [y] when the Hobbit_2003 is open: ";
-            std::cin >> s;
-        }
-        //
-        readInstanices();
+        //when started the server
     }
     static void Update()
     {
+        if (!checkGameOpen())
+        {
+            return;
+        }
+
         readInstanices();
 
         // handle game states
@@ -59,15 +79,13 @@ public:
             // game state
             static uint32_t previousState;
             static uint32_t currentState;
+            currentState = getGameState();
 
-            //lvl loaded
+            // level loaded
             static bool previousLevelLoaded;
             static bool currentLevelLoaded;
-
-            currentState = getGameState();
             currentLevelLoaded = getLevelLoaded();
 
-            // 0xA: open level
             if (previousLevelLoaded != currentLevelLoaded && currentLevelLoaded)
             {
                 // call enterNewLevel for all classes
@@ -77,7 +95,7 @@ public:
                 }
             }
 
-            // exit level
+            // exit level, 0xA: in a loaded level
             if (previousState == 0xA && currentState != 0xA)
             {
                 // call enterNewLevel for all classes
@@ -97,7 +115,6 @@ public:
                 e->Update();
             }
         }
-
     }
     
     static void readPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) 
@@ -140,32 +157,5 @@ public:
         packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
 
         return packets;
-    }
-
-
-    static bool checkGameOpen()
-    {
-        MemoryAccess::setExecutableName("Meridian.exe");
-        return MemoryAccess::readProcess();
-    }
-    static void readInstanices()
-    {
-        readGameState();
-        readLevelLoaded();
-        readGameLevel();
-    }
-    
-
-    static uint32_t getGameState()
-    {
-        return gameState;
-    }
-    static bool getLevelLoaded()
-    {
-        return levelLoaded;
-    }
-    static uint32_t getGameLevel()
-    {
-        return currentLevel;
     }
 };

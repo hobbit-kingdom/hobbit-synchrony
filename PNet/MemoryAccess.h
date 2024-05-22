@@ -62,7 +62,7 @@ using PROCESS = HANDLE;
 		{
 			return uint32_t(readData(LPVOID(Address)));
 		}
-		static LPVOID findDataInStackHobbit(LPVOID beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t dataToFind) {
+		static LPVOID findObjectAddressByGUID(LPVOID beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t dataToFind) {
 			HANDLE Process = readProcess();
 			if (!Process) {
 				return nullptr;

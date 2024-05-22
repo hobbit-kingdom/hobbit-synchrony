@@ -60,67 +60,40 @@ public:
 	}
 	static uint32_t readData(uint32_t Address)
 	{
-		return uint32_t(readData(LPVOID(Address)));
+		return readData(LPVOID(Address));
 	}
-	static LPVOID findDataInStackHobbit(LPVOID beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t dataToFind) {
+
+
+	static uint32_t findObjectAddressByGUID(uint32_t beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t guid) {
+		
 		HANDLE Process = readProcess();
 		if (!Process) {
-			return nullptr;
+			return 0;
 		}
 
 		// Loop through the stack memory
 		for (size_t offset = stackSize; offset > 0; offset -= jumpSize) {
-			uint32_t currentData = 0;
-			LPVOID currentAddress = LPVOID(uint32_t(beginStackAddress) + offset);
+			uint32_t objectAddress = 0;
+			uint32_t objectGUID = 0;
+			LPVOID objectPtrPtr = LPVOID(beginStackAddress + offset);
 
-			if (ReadProcessMemory(Process, currentAddress, &currentData, sizeof(currentData), NULL)) {
-				LPVOID guidAddress = LPVOID(uint32_t(currentData) + 0x8);
-				if (ReadProcessMemory(Process, guidAddress, &currentData, sizeof(currentData), NULL) && currentData == dataToFind) {
+			//read the pointer of an object
+			if (ReadProcessMemory(Process, objectPtrPtr, &objectAddress, sizeof(objectAddress), NULL)) {
+				LPVOID guidAddress = LPVOID(objectAddress + 0x8);
+				//read the guid
+				if (ReadProcessMemory(Process, guidAddress, &objectGUID, sizeof(objectGUID), NULL) && objectGUID == guid) {
 					CloseHandle(Process);
-					return guidAddress;
+					return objectAddress;
 				}
 			}
 
 		}
 
 		CloseHandle(Process);
-		return nullptr; // Return nullptr if dataToFind is not found in the stack range
+		return 0; // Return nullptr if dataToFind is not found in the stack range
 	}
 
 	// templates
-	template<typename T>
-	static T writeDataSwitcher(LPVOID Address, T newData, T initialData)
-	{
-		T data;  // Variable to store the data read from memory
-		HANDLE Process = readProcess();
-		if (!ReadProcessMemory(Process, Address, &data, sizeof(data), NULL)) { // Reading the data from memory
-			CloseHandle(Process);
-			return 1;
-		}
-
-		DWORD oldProtect;
-		if (data == initialData) {
-			SIZE_T dwSize = sizeof(newData);
-			VirtualProtectEx(Process, Address, dwSize, PAGE_EXECUTE_READWRITE, &oldProtect);
-			BOOL bWriteSuccess = WriteProcessMemory(Process, Address, &newData, dwSize, NULL);
-			VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
-			CloseHandle(Process);
-			if (bWriteSuccess) return 0;
-		}
-		else {
-			SIZE_T dwSize = sizeof(initialData);
-			VirtualProtectEx(Process, Address, dwSize, PAGE_EXECUTE_READWRITE, &oldProtect);
-			BOOL bWriteSuccess = WriteProcessMemory(Process, Address, &initialData, dwSize, NULL);
-			VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
-			CloseHandle(Process);
-			if (bWriteSuccess) return 0;
-		}
-	}
-	template<typename T>
-	static uint32_t writeDataSwitcher(uint32_t Address, uint32_t newData, uint32_t initialData)
-	{
-		writeDataSwitcher(LPVOID(Address), newData, initialData);
-	}
 	template<typename T>
 	static T writeData(LPVOID Address, T data)
 	{
@@ -144,13 +117,21 @@ public:
 		writeData(LPVOID(Address), data);
 	}
 
+	// converts uint32_t to float
 	static float uint32ToFloat(uint32_t value) {
 		float result;
 		std::memcpy(&result, &value, sizeof(result));
 		return result;
 	}
+	// converts float to uint32_t
+	static uint32_t floatToUint32(float value) {
+		uint32_t result;
+		std::memcpy(&result, &value, sizeof(result));
+		return result;
+	}
 
-	// additional funcitons
+
+	// additional funcitons Find by Pattern
 	static std::vector<void*> findBytePatternInProcessMemory(void* pattern, size_t patternLen);
 	static std::vector<uint32_t> findBytePatternInProcessMemory(const std::vector<uint32_t>& pattern);
 	static std::vector<uint32_t> findBytePatternInProcessMemory(uint32_t pattern) 
@@ -159,7 +140,6 @@ public:
 		tempPattern.push_back(pattern);
 		return findBytePatternInProcessMemory(tempPattern);
 	};
-
 	static bool getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags);
 	static OppenedQuery initVirtualQuery(PROCESS process);
 private:

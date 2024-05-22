@@ -2,157 +2,181 @@
 #include <vector>
 #include <windows.h>
 #include "MemoryAccess.h"
-#include "../PNet/ByteFunctions.h"
-
 
 class NPC
 {
-	
-public:
-	// Data members
-	static const uint32_t OBJECT_ARRAY_PTR; //equals to 0x0076F648
+private:
+	// Address of Stack of Objects
+	static uint32_t OBJECT_STACK_ADDRESS; //equals to 0x0076F648
+	// Pointers
+	uint32_t objectAddress;					// Object pointer
+	std::vector<uint32_t> positionXAddress;	// Position X pointer
+	uint32_t rotationYAddress;				// Rotation Y pointer
+	uint32_t animationAddress;				// Animation pointer
 
-	// Constructors
-	NPC(uint32_t addressOfNPC)
+	// GUID of object
+	uint32_t guid;
+
+	// Sets objects pointer of the NPC
+	void setObjectPtrByGUID(uint32_t guid)
 	{
-		std::cout << "CreateNPC" << std::endl;
-		std::cout << "GUID Address: " << addressOfNPC << std::endl;
-		setObjAddress(addressOfNPC);
-		setGUID(MemoryAccess::readData(0x8 + addressOfNPC));
+		objectAddress = MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0xEFEC, 0x14, guid);
 
-		setPositionAddress();
-		setRotationAddress();
-		setAnimationAddress();
+		// Display new ObjAddress
+		std::cout << std::hex;
+		std::cout << "~ObjectPtr: " << objectAddress;
+		std::cout << std::dec << std::endl;
+	}
+	// Sets position X pointers of the NPC 
+	void setPositionXPtr()
+	{
+		// remove all stored pointers
+		positionXAddress.clear();
 
+		// store object pointer
+		uint32_t ObjectPtr = getObjectPtr();
+
+
+		// set current position pointer
+		positionXAddress.push_back(0xC + 0x8 + ObjectPtr);
+
+		// set root position X pointer
+		positionXAddress.push_back(0x18 + 0x8 + ObjectPtr);
+
+		// set the animation position X pointer
+		uint32_t animAdd1 = getObjectPtr();
+		uint32_t animAdd2 = MemoryAccess::readData(0x304 + animAdd1);
+		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
+		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
+		animationAddress = 0x8 + animAdd4;
+		positionXAddress.push_back(-0xC4 + animationAddress);
+
+		// Display the position X pointers Data
+		std::cout << std::hex;
+		for (uint32_t posxAdd : positionXAddress)
+		{
+			//dispplay the poistion Data
+			std::cout << "~Position Data:" << std::endl;
+			std::cout << "~posX: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(posxAdd)) << std::endl;
+			std::cout << "~posXAddress: " << posxAdd << std::endl;
+		}
+		std::cout << std::dec;
 		std::cout << std::endl;
 	}
-	// Object Address
-	uint32_t getObjAddress() { return objAddress; }
-	void setObjAddress(uint32_t newObjAddress) 
+	// Sets rotation Y pointer of the NPC 
+	void setRotationYPtr()
 	{
-		objAddress = newObjAddress; 
+		// store object pointer
+		uint32_t ObjectPtr = getObjectPtr();
+
+		// set rotation Y pointer
+		rotationYAddress = 0x64 + 0x8 + ObjectPtr;
+
+		// Display the rotation Y pointer Data
 		std::cout << std::hex;
-		std::cout << "newObjAddress: " << newObjAddress;
-		std::cout << std::endl << std::dec;
+		std::cout << "~Rotation Data:" << std::endl;
+		std::cout << "~rotY: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(rotationYAddress)) << std::endl;
+		std::cout << "~rotYAddress: " << rotationYAddress << std::endl;
+		std::cout << std::endl;
+		std::cout << std::dec;
+	}
+	// Sets animation pointer of the NPC
+	void setAnimationPtr()
+	{
+		// store object pointer
+		uint32_t ObjectPtr = getObjectPtr();
+
+		// set animation pointer
+		uint32_t animAdd1 = MemoryAccess::readData(0x304 + ObjectPtr);
+		uint32_t animAdd2 = MemoryAccess::readData(0x50 + animAdd1);
+		uint32_t animAdd3 = MemoryAccess::readData(0x10C + animAdd2);
+		animationAddress = 0x8 + animAdd3;
+
+		// Display the animation pointer Data
+		std::cout << std::hex;
+		std::cout << "anim: " << MemoryAccess::readData(animationAddress) << std::endl;
+		std::cout << "animAddress: " << animationAddress << std::endl;
+		std::cout << std::endl;
+	}
+	
+
+public:
+	// Constructors
+	NPC(uint32_t GUID) :guid(GUID)
+	{
+		// set the Object Array Address
+		OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
+
+		// Constructor message
+		std::cout << "~CreateNPC" << std::endl;
+
+		// read the pointers of instances
+		setObjectPtrByGUID(GUID);
+		setPositionXPtr();
+		setRotationYPtr();
+		setAnimationPtr();
+
+		// end Constructor message
+		std::cout << std::endl;
 	}
 
-	// GUID
+	// Returns object pointer
+	uint32_t getObjectPtr() { return objectAddress; }
+
+	// writes new GUID 
+	// modifies game file
 	void setGUID(uint32_t newGUID) 
 	{ 
-		guid = newGUID; 
+		MemoryAccess::writeData(objectAddress, newGUID);
 	}
 
-	// Position
+	// writes new positionX 
+	// modifies game file
 	void setPositionX(uint32_t newPosition)
 	{
-		for (uint32_t posXadd : posxAddress)
+		for (uint32_t posXadd : positionXAddress)
 		{
 			MemoryAccess::writeData(posXadd, newPosition);
 		}
 	}
+	// writes new positionY
+	// modifies game file
 	void setPositionY(uint32_t newPosition)
 	{
-		for (uint32_t posXadd : posxAddress)
+		for (uint32_t posXadd : positionXAddress)
 		{
 			MemoryAccess::writeData(0x4 + posXadd, newPosition);
 		}
 	}
+	// writes new positionZ 
+	// modifies game file
 	void setPositionZ(uint32_t newPosition)
 	{
-		for (uint32_t posXadd : posxAddress)
+		for (uint32_t posXadd : positionXAddress)
 		{
 			MemoryAccess::writeData(0x8 + posXadd, newPosition);
 		}
 	}
-
-
+	// writes new Position 
+	// modifies game file
 	void setPosition(uint32_t newPositionX, uint32_t newPositionY, uint32_t newPositionZ)
 	{
 		setPositionX(newPositionX);
 		setPositionY(newPositionY);
 		setPositionZ(newPositionZ);
 	}
-	// Rotation
+
+	// writes new GUID 
+	// modifies game filen
 	void setRotationY(uint32_t newRotation)
 	{
-		MemoryAccess::writeData(rotyAddress, newRotation);
+		MemoryAccess::writeData(rotationYAddress, newRotation);
 	}
-	// Animation
+	// writes new GUID 
+	// modifies game file
 	void setAnimation(uint32_t newAnimation)
 	{
-		MemoryAccess::writeData(animAddress, newAnimation);
-	}
-
-private:
-	uint32_t objAddress;
-	std::vector<uint32_t> posxAddress;
-	uint32_t rotyAddress;
-
-	uint32_t animAddress;
-
-	uint32_t guid;
-
-	void setPositionAddress()
-	{
-		posxAddress.clear();
-
-		uint32_t GUIDaddrs = getObjAddress();
-
-		posxAddress.push_back(0xC + GUIDaddrs);
-		//posxAddress.push_back(0xC + 0x4*3 + GUIDaddrs);
-		posxAddress.push_back(0x18 + GUIDaddrs);
-
-		uint32_t animAdd1 = getObjAddress();
-		uint32_t animAdd2 = MemoryAccess::readData(0x304 - 0x8 + animAdd1);
-		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
-		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
-		animAddress = 0x8 + animAdd4;
-		posxAddress.push_back(-0xC4 + animAddress);
-		//posxAddress.push_back(-0xC4 + 0x9*0x4 + animAddress);
-
-		
-		std::cout << std::hex;
-		for (uint32_t posxAdd : posxAddress)
-		{
-			//dispplay the poistion Data
-			std::cout << "Position Data:" << std::endl;
-			std::cout << "posX: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(posxAdd)) << std::endl;
-			std::cout << "posXAddress: " << posxAdd << std::endl;
-		}
-		std::cout << std::dec;
-		std::cout << std::endl;
-	}
-	void setRotationAddress()
-	{
-
-		// general position X
-		uint32_t animAdd1 = getObjAddress();
-		rotyAddress = uint32_t(0x64 + uint32_t(animAdd1));
-
-		//dispplay the poistion Data
-		std::cout << std::hex;
-		std::cout << "Rotation Data:" << std::endl;
-		std::cout << "rotY: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(rotyAddress)) << std::endl;
-		std::cout << "rotYAddress: " << rotyAddress << std::endl;
-		std::cout << std::endl;
-		std::cout << std::dec;
-
-	}
-	void setAnimationAddress()
-	{
-
-		// animation
-		uint32_t animAdd1 = getObjAddress();
-		uint32_t animAdd2 = MemoryAccess::readData(0x304 - 0x8 + animAdd1);
-		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
-		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
-		animAddress = 0x8 + animAdd4;
-		std::cout << std::hex;
-		std::cout << "anim: " << MemoryAccess::readData(animAddress) << std::endl;
-		std::cout << "animAddress: " << animAddress << std::endl;
-		std::cout << std::endl;
-
+		MemoryAccess::writeData(animationAddress, newAnimation);
 	}
 };
 
-const uint32_t OBJECT_ARRAY_PTR = uint32_t(0x0076F648);

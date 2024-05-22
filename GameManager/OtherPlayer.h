@@ -97,16 +97,12 @@ public:
 		processPackets = false;
 	}
 
-	// reads pointers data (you call it when enter new level)
 	void ReadPtrs() override 
 	{
-		uint32_t arrayStartAddress = MemoryAccess::readData(0x0076F648);//0x0076F648 array address
 		otherPlayers.clear();
-
 		for (uint32_t i = 0; i < GUIDs.size(); i++)
 		{
-			uint32_t addressFBilbo = (uint32_t)MemoryAccess::findDataInStackHobbit(LPVOID(arrayStartAddress), 0xEFEC, 0x14, GUIDs[i]);
-			otherPlayers.push_back(NPC(addressFBilbo));
+			otherPlayers.push_back(NPC(GUIDs[i]));
 		}
 	};
 };
