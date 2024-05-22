@@ -151,9 +151,9 @@ public:
 
 	// additional funcitons
 	static std::vector<void*> findBytePatternInProcessMemory(void* pattern, size_t patternLen);
+	static std::vector<uint32_t> findBytePatternInProcessMemory(const std::vector<uint32_t>& pattern);
 
 	static bool getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags);
 	static OppenedQuery initVirtualQuery(PROCESS process);
-
 private:
 };

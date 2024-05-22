@@ -1,7 +1,5 @@
 #include "MemoryAccess.h"
 
-
-
 std::string MemoryAccess::getExecutableName() {
 	return executableName;
 }
@@ -85,16 +83,25 @@ DWORD MemoryAccess::readProcessID()
 	return 0;
 }
 
+OppenedQuery initVirtualQuery(HANDLE process)
+{
+	OppenedQuery q = {};
+
+	q.queriedProcess = process;
+	q.baseQueriedPtr = 0;
+	return q;
+}
+
 std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, size_t patternLen)
 {
-
 	if (patternLen == 0) { return {}; }
 
-	HANDLE Process = MemoryAccess::readProcess();
+	HANDLE process = MemoryAccess::readProcess();
+
 	std::vector<void*> returnVec;
 	returnVec.reserve(1000);
 
-	auto query = initVirtualQuery(Process);
+	auto query = initVirtualQuery(process);
 
 	if (!query.oppened())
 		return {};
@@ -110,9 +117,9 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 			//search for our byte patern
 			size_t size = (char*)hi - (char*)low;
 			char* localCopyContents = new char[size];
-			if (
-				ReadProcessMemory(Process, low, &size, sizeof(size), NULL)
-				)
+
+			SIZE_T readSize = 0;
+			if(ReadProcessMemory(process, low, localCopyContents, size, &readSize))
 			{
 				char* cur = localCopyContents;
 				size_t curPos = 0;
@@ -130,7 +137,54 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 		}
 	}
 
-	CloseHandle(Process);
+	return returnVec;
+}
+std::vector<uint32_t> MemoryAccess::findBytePatternInProcessMemory(const std::vector<uint32_t>& pattern)
+{
+	if (pattern.empty()) { return {}; }
+
+	HANDLE process = MemoryAccess::readProcess();
+
+	std::vector<uint32_t> returnVec;
+	returnVec.reserve(1000);
+
+	auto query = initVirtualQuery(process);
+
+	if (!query.oppened())
+		return {};
+
+	void* low = nullptr;
+	void* hi = nullptr;
+	int flags = memQueryFlags_None;
+
+	while (getNextQuery(query, low, hi, flags))
+	{
+		if ((flags | memQueryFlags_Read) && (flags | memQueryFlags_Write))
+		{
+			//search for our byte pattern
+			size_t size = (char*)hi - (char*)low;
+			char* localCopyContents = new char[size];
+
+			SIZE_T readSize = 0;
+			if (ReadProcessMemory(process, low, localCopyContents, size, &readSize))
+			{
+				char* cur = localCopyContents;
+				size_t curPos = 0;
+				size_t patternLen = pattern.size() * sizeof(uint32_t);
+				while (curPos < size - patternLen + 1)
+				{
+					if (memcmp(cur, pattern.data(), patternLen) == 0)
+					{
+						returnVec.push_back(reinterpret_cast<uint32_t>((char*)low + curPos));
+					}
+					curPos++;
+					cur++;
+				}
+			}
+			delete[] localCopyContents;
+		}
+	}
+
 	return returnVec;
 }
 
