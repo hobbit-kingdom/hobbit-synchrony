@@ -67,6 +67,10 @@ public:
     }
     static void Update()
     {
+        //temporary
+        uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
+        std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;
+
         if (!checkGameOpen())
         {
             return;

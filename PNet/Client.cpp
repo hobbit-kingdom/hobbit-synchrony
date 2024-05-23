@@ -311,38 +311,38 @@ namespace PNet
 							}
 						}
 					}
-
-					else if (use_fd.revents & POLLWRNORM)
+					else break;
+				}
+				if (use_fd.revents & POLLWRNORM)
+				{
+					PacketManager& pm = connection.pm_outgoing;
+					while (pm.HasPendingPackets())
 					{
-						PacketManager& pm = connection.pm_outgoing;
-						while (pm.HasPendingPackets())
+						char* bufferPtr = &pm.Retrieve()->buffer[0];
+						pm.currentPacketSize = pm.Retrieve()->buffer.size();
+						int bytesSent = send(use_fd.fd, (char*)(bufferPtr)+pm.currentPacketExtractionOffset, pm.currentPacketSize - pm.currentPacketExtractionOffset, 0);
+						if (bytesSent > 0)
 						{
-							char* bufferPtr = &pm.Retrieve()->buffer[0];
-							pm.currentPacketSize = pm.Retrieve()->buffer.size();
-							int bytesSent = send(use_fd.fd, (char*)(bufferPtr)+pm.currentPacketExtractionOffset, pm.currentPacketSize - pm.currentPacketExtractionOffset, 0);
-							if (bytesSent > 0)
-							{
-								pm.currentPacketExtractionOffset += bytesSent;
-							}
-
-							if (pm.currentPacketExtractionOffset == pm.Retrieve()->buffer.size())
-							{
-								pm.currentPacketExtractionOffset = 0;
-								pm.Pop();
-							}
-							else
-							{
-								break;
-							}
+							pm.currentPacketExtractionOffset += bytesSent;
 						}
-						if (!connection.pm_outgoing.HasPendingPackets())
+
+						if (pm.currentPacketExtractionOffset == pm.Retrieve()->buffer.size())
 						{
-							master_fd.events = POLLRDNORM;
+							pm.currentPacketExtractionOffset = 0;
+							pm.Pop();
+						}
+						else
+						{
 							break;
 						}
 					}
-					else break;
+					if (!connection.pm_outgoing.HasPendingPackets())
+					{
+						master_fd.events = POLLRDNORM;
+						break;
+					}
 				}
+
 				else break;
 			}
 
@@ -350,9 +350,9 @@ namespace PNet
 			std::vector<std::shared_ptr<Packet>> packets;
 			while (connection.pm_incoming.HasPendingPackets())
 			{
-				std::shared_ptr<Packet> packet = connection.pm_incoming.Retrieve();
+				std::shared_ptr<Packet> packet = connection.pm_incoming.RetrieveLast();
 				packets.push_back(packet);
-				connection.pm_incoming.Pop(); // Remove the packet from the queue
+				connection.pm_incoming.Clear(); // Remove the packet from the queue
 
 				if (!ProcessPacket(packet))
 				{

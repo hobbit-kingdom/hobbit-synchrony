@@ -20,7 +20,7 @@ private:
 	// Sets objects pointer of the NPC
 	void setObjectPtrByGUID(uint32_t guid)
 	{
-		objectAddress = MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0xEFEC, 0x14, guid);
+		objectAddress = MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, guid);
 
 		// Display new ObjAddress
 		std::cout << std::hex;

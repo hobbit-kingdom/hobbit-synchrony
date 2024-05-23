@@ -64,8 +64,10 @@ public:
 	}
 
 
-	static uint32_t findObjectAddressByGUID(uint32_t beginStackAddress, size_t stackSize, uint32_t jumpSize, uint32_t guid) {
+	static uint32_t findObjectAddressByGUID(uint32_t beginStackAddress, uint32_t guid) {
 		
+		const size_t stackSize = 0xEFEC;
+		const size_t jumpSize = 0x14;
 		HANDLE Process = readProcess();
 		if (!Process) {
 			return 0;
