@@ -79,6 +79,7 @@
 #include "../asio-1.30.2/include/asio.hpp"
 #include "../asio-1.30.2/include/asio/ts/buffer.hpp"
 #include "../asio-1.30.2/include/asio/ts/internet.hpp"
+#include <mutex>
 
 namespace olc
 {
@@ -279,10 +280,10 @@ namespace olc
 
 			void wait()
 			{
-				//while (empty())
+				while (empty())
 				{
 					std::unique_lock<std::mutex> ul(muxBlocking);
-					//cvBlocking.wait(ul);
+					cvBlocking.wait(ul);
 				}
 			}
 
@@ -711,7 +712,6 @@ namespace olc
 				Disconnect();
 			}
 
-		public:
 			// Connect to server with hostname/ip-address and port
 			bool Connect(const std::string& host, const uint16_t port)
 			{
@@ -767,10 +767,10 @@ namespace olc
 					return false;
 			}
 
-		public:
 			// Send message to server
 			void Send(const message<T>& msg)
 			{
+				std::lock_guard<std::mutex> guard(guardSend);
 				if (IsConnected())
 					 m_connection->Send(msg);
 			}
@@ -790,6 +790,7 @@ namespace olc
 			std::unique_ptr<connection<T>> m_connection;
 			
 		private:
+			std::mutex guardSend;
 			// This is the thread safe queue of incoming messages from server
 			tsqueue<owned_message<T>> m_qMessagesIn;
 		};

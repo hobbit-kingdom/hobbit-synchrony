@@ -26,18 +26,18 @@ void MyServer::OnConnect(TCPConnection& newConnection)
 	}
 
 	// add client to the list
-	NetworkClient::networkClients.push_back(NetworkClient());
-	std::cout << "Assigned " << NetworkClient::networkClients.back().id << " " << "index " << NetworkClient::networkClients.size() << '\n';
+	NetworkClient::otherClients.push_back(NetworkClient());
+	std::cout << "Assigned " << NetworkClient::otherClients.back().id << " " << "index " << NetworkClient::otherClients.size() << '\n';
 
 
 	// assign ID to client
 	std::shared_ptr<Packet> createPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-	*createPlayer << 2 << CREATE_PLAYER << NetworkClient::networkClients.back().id;
+	*createPlayer << 2 << CREATE_PLAYER << NetworkClient::otherClients.back().id;
 	// send data about other clients, not including itself
-	*createPlayer << NetworkClient::networkClients.size() - 1;
-	for (uint32_t i = 0; i < NetworkClient::networkClients.size() - 1; ++i)
+	*createPlayer << NetworkClient::otherClients.size() - 1;
+	for (uint32_t i = 0; i < NetworkClient::otherClients.size() - 1; ++i)
 	{
-		*createPlayer << NetworkClient::networkClients[i].id;
+		*createPlayer << NetworkClient::otherClients[i].id;
 	}
 	//send only to new conection
 	newConnection.pm_outgoing.Append(createPlayer);
@@ -45,8 +45,8 @@ void MyServer::OnConnect(TCPConnection& newConnection)
 
 	// notify other clients about new client
 	std::shared_ptr<Packet> addPlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);
-	ipToId[newConnection.ToString()] = NetworkClient::networkClients.back().id;
-	*addPlayer << 2 << ADD_PLAYER << NetworkClient::networkClients.back().id;
+	ipToId[newConnection.ToString()] = NetworkClient::otherClients.back().id;
+	*addPlayer << 2 << ADD_PLAYER << NetworkClient::otherClients.back().id;
 	// send to everyone
 	for (auto& connection : connections)
 	{
@@ -66,7 +66,7 @@ void MyServer::OnDisconnect(TCPConnection& lostConnection, std::string reason)
 	// find index
 	uint32_t index = NetworkClient::GetIndexByID(playerId);
 	// remove client
-	NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + index);
+	NetworkClient::otherClients.erase(NetworkClient::otherClients.begin() + index);
 
 	// sned remove player message
 	std::shared_ptr<Packet> removePlayer = std::make_shared<Packet>(PacketType::PT_IntegerArray);

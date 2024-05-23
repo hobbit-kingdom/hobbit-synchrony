@@ -7,6 +7,7 @@
 #include "OtherPlayer.h"
 
 #include <vector>
+#include <mutex>
 //0x00760864: loading layers
 
 class GameManager
@@ -59,7 +60,7 @@ private:
         readLevelLoaded();
         readGameLevel();
     }
-
+    static std::mutex guardUpdate;
 public:
     static void Start()
     {
@@ -67,9 +68,10 @@ public:
     }
     static void Update()
     {
+        std::lock_guard<std::mutex> guard(guardUpdate);
         //temporary
-        uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
-        std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;
+       // uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
+        //std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;
 
         if (!checkGameOpen())
         {

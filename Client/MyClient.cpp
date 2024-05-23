@@ -90,8 +90,8 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 		{
 			if (id == clientID) break;
 			cout << "New Player ID: " << id << endl;
-			NetworkClient::networkClients.push_back(NetworkClient());
-			NetworkClient::networkClients.back().id = id;
+			NetworkClient::otherClients.push_back(NetworkClient());
+			NetworkClient::otherClients.back().id = id;
 
 		}
 		else if (type == REMOVE_PLAYER)
@@ -99,7 +99,7 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 			if (id == clientID) break;
 			uint32_t index = NetworkClient::GetIndexByID(id);
 
-			NetworkClient::networkClients.erase(NetworkClient::networkClients.begin() + index);
+			NetworkClient::otherClients.erase(NetworkClient::otherClients.begin() + index);
 
 			cout << "UnMapped " << id << " TO " << index << "\n";
 		}
@@ -117,8 +117,8 @@ bool MyClient::ProcessPacket(std::shared_ptr<Packet> packet)
 			for (uint32_t i = 0; i < numOnlineClients; ++i)
 			{
 				*packet >> clientId;
-				NetworkClient::networkClients.push_back(NetworkClient());
-				NetworkClient::networkClients.back().id = clientId;
+				NetworkClient::otherClients.push_back(NetworkClient());
+				NetworkClient::otherClients.back().id = clientId;
 			}
 			return true;
 		}

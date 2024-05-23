@@ -18,8 +18,3 @@ enum class GameMsg : uint32_t
 	Game_RemovePlayer,
 	Game_UpdatePlayer,
 };
-
-struct sPlayerDescription
-{
-	uint32_t nUniqueID = 0;
-};

@@ -6,3 +6,4 @@ std::vector<ClientEntity*> GameManager::clientEntities{ new MainPlayer(), new Ot
 uint32_t GameManager::gameState;
 bool GameManager::levelLoaded;
 uint32_t GameManager::currentLevel;
+std::mutex GameManager::guardUpdate;
