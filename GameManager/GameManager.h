@@ -10,6 +10,7 @@
 #include <mutex>
 //0x00760864: loading layers
 
+#include <iomanip>
 class GameManager
 {
 private:
@@ -69,10 +70,72 @@ public:
     static void Update()
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
-        //temporary
-       // uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
-        //std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;
 
+        //temporary
+        /*
+
+        //testing finding by X,Y ???
+        uint32_t bilboPosXPTR = MemoryAccess::readData(0x0075BA3C);
+
+        float BX = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7C4 + bilboPosXPTR));
+        float BY = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7C4 + 0x4 + bilboPosXPTR));
+        float BZ = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7C4 + 0x8 + bilboPosXPTR));
+        float RY = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7AC + bilboPosXPTR));
+
+        uint32_t InteractivePtrX = MemoryAccess::findObjectAddressByGUID(MemoryAccess::readData(0x0076F648), 0x41F77800);
+
+        float IX = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0xC + 0x8 + InteractivePtrX));
+        float IY = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0xC + 0x8 + 0x4 + InteractivePtrX));
+        float IZ = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0xC + 0x8 + 0x8 + InteractivePtrX));
+
+    
+
+        float dx = BX - IX;
+        float dy = abs(BY - IY);
+        float dz = abs(BZ - IZ);
+
+        static float dxErr = 0;
+        static float dyErr = 0;
+        static float prevDx;
+        static float prevDy;
+
+        if (abs(dx - prevDx) > dxErr && prevDx != 0)
+        {
+            dxErr = abs(dx - prevDx);
+        }
+        prevDx = dx;
+        if (abs(dy - prevDy) > dyErr && prevDy != 0)
+        {
+            dyErr = abs(dy - prevDy);
+        }
+        prevDy = dy;
+
+
+        float dxz = sqrt(dx * dx + dz * dz);
+        float dxy = sqrt(dx * dx + dy * dy);
+
+        //float anglexXY = atan2(dy, abs(dx)); // Calculate the angle in the XY plane
+        float anglexXY = acos((dx * dx) / (dxy * abs(dx)));
+        float newIX = BX + dxy * cos(anglexXY); // Project along the XY plane
+        float newIY = BY + dxy * sin(anglexXY);
+        float newIZ = BZ + dz * sin(anglexXY); // Project along the XZ plane
+
+
+        float DistanceXYZ = sqrt((dx * dx + dy*dy) + dz* dz);
+
+
+        std::cout << "DXErr: " << dxErr << " | DYErr:" << dyErr << std::endl;
+        std::cout << "dx: " << dx << " | dy:" << dy << " | dz:" << dz << " | ay:"  << anglexXY << std::endl;
+        std::cout << "BX: " << BX << " | BY:" << BY << " | BZ:" << BZ << std::endl;
+        std::cout << "ix: " << newIX << " | iy:" << newIY << " | iz:" << newIZ << std::endl;
+        std::cout << "IX: " << IX << " | IY:" << IY << " | IZ:" << IZ << std::endl;
+        std::cout << "DistanceXYZ = " << DistanceXYZ << std::endl;
+        std::cout << "\033[36mdistance: \033[0m" << dxy << std::endl;
+        // end testing 
+        // uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
+        //std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;
+        */
+        // end temporary 
         if (!checkGameOpen())
         {
             return;
@@ -92,6 +155,7 @@ public:
             static bool currentLevelLoaded;
             currentLevelLoaded = getLevelLoaded();
 
+            // new level
             if (previousLevelLoaded != currentLevelLoaded && currentLevelLoaded)
             {
                 // call enterNewLevel for all classes
@@ -165,3 +229,5 @@ public:
         return packets;
     }
 };
+
+
