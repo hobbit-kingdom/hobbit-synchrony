@@ -39,6 +39,20 @@ class MemoryAccess
 {
 public:
 
+	static void udpateProcess()
+	{
+		if(Process)
+			CloseHandle(Process);
+		Process = readProcess();
+	}
+	static bool checkProcess()
+	{
+		if (!Process) {
+			std::cout << "NO PROCESS ASSIGNED" << std::endl;
+			return 0;
+		}
+		return 1;
+	}
 	static std::string getExecutableName();
 	static void setExecutableName(const std::string& newName);
 
@@ -49,13 +63,12 @@ public:
 
 	static uint32_t readData(LPVOID Address)
 	{
+		if (!checkProcess()) return 0;
 		uint32_t data = 0;
-		HANDLE Process = readProcess();
 		if (!ReadProcessMemory(Process, Address, &data, sizeof(data), NULL)) { // Reading the data from memory
 
 			data = 0;
 		}
-		CloseHandle(Process);
 		return uint32_t(data);
 	}
 	static uint32_t readData(uint32_t Address)
@@ -65,14 +78,10 @@ public:
 
 
 	static uint32_t findObjectAddressByGUID(uint32_t beginStackAddress, uint32_t guid) {
-		
+		if (!checkProcess()) return 0;
+
 		const size_t stackSize = 0xEFEC;
 		const size_t jumpSize = 0x14;
-		HANDLE Process = readProcess();
-		if (!Process) {
-			return 0;
-		}
-
 		// Loop through the stack memory
 		for (size_t offset = stackSize; offset > 0; offset -= jumpSize) {
 			uint32_t objectAddress = 0;
@@ -84,14 +93,12 @@ public:
 				LPVOID guidAddress = LPVOID(objectAddress + 0x8);
 				//read the guid
 				if (ReadProcessMemory(Process, guidAddress, &objectGUID, sizeof(objectGUID), NULL) && objectGUID == guid) {
-					CloseHandle(Process);
 					return objectAddress;
 				}
 			}
 
 		}
 
-		CloseHandle(Process);
 		return 0; // Return nullptr if dataToFind is not found in the stack range
 	}
 
@@ -99,10 +106,9 @@ public:
 	template<typename T>
 	static T writeData(LPVOID Address, T data)
 	{
-		HANDLE Process = readProcess();
+		if (!checkProcess()) return 0;
 		T temporary = data;
 		if (!ReadProcessMemory(Process, Address, &temporary, sizeof(temporary), NULL)) { // Reading the value from memory
-			CloseHandle(Process);
 			return T(); // Return default value of type T if reading fails
 		}
 		DWORD oldProtect;
@@ -145,4 +151,5 @@ public:
 	static bool getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags);
 	static OppenedQuery initVirtualQuery(PROCESS process);
 private:
+	static HANDLE Process;
 };

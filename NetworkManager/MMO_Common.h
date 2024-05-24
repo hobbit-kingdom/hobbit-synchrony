@@ -4,7 +4,7 @@
 #define OLC_PGEX_NETWORK
 #include "olcPGEX_Network.h"
 
-enum class GameMsg : uint32_t
+enum class PacketType : uint32_t
 {
 	Server_GetStatus,
 	Server_GetPing,
@@ -14,7 +14,7 @@ enum class GameMsg : uint32_t
 	Client_RegisterWithServer,
 	Client_UnregisterWithServer,
 
-	Game_AddPlayer,
-	Game_RemovePlayer,
-	Game_UpdatePlayer,
+	Game_AddClient,
+	Game_RemoveClient,
+	Game_UpdateClient,
 };

@@ -1,5 +1,7 @@
 #include "MemoryAccess.h"
 
+HANDLE MemoryAccess::Process;
+
 //@return name of attached executable
 std::string MemoryAccess::getExecutableName() {
 	return executableName;
@@ -105,12 +107,10 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 {
 	if (patternLen == 0) { return {}; }
 
-	HANDLE process = MemoryAccess::readProcess();
-
 	std::vector<void*> returnVec;
 	returnVec.reserve(1000);
 
-	auto query = initVirtualQuery(process);
+	auto query = initVirtualQuery(Process);
 
 	if (!query.oppened())
 		return {};
@@ -128,7 +128,7 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 			char* localCopyContents = new char[size];
 
 			SIZE_T readSize = 0;
-			if(ReadProcessMemory(process, low, localCopyContents, size, &readSize))
+			if(ReadProcessMemory(Process, low, localCopyContents, size, &readSize))
 			{
 				char* cur = localCopyContents;
 				size_t curPos = 0;

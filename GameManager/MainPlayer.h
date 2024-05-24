@@ -18,13 +18,13 @@ private:
 public:
 
     // packages
-    void ReadPackets(GamePacket gamePacket, uint32_t playerIndex) override
+    void ReadPacket(GamePacket gamePacket, uint32_t playerIndex) override
     {
         if (!processPackets)
             return;
         // read packets
     }
-    GamePacket SetPackets() override
+    GamePacket WritePacket() const override
     {
         if (!processPackets)
             return GamePacket();

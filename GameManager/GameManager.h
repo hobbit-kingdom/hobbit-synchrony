@@ -22,46 +22,49 @@ private:
     static bool levelLoaded;
     static uint32_t currentLevel;
 
-    static void readGameState()
+    static void ReadGameState()
     {
         gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state address
     }
-    static void readGameLevel()
+    static void ReadGameLevel()
     {
         currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level address
     }
-    static void readLevelLoaded()
+    static void ReadLevelLoaded()
     {
         levelLoaded = !MemoryAccess::readData(0x0072C7D4);  //0x0072C7D4: is loaded level address
     }
 
 
-    static uint32_t getGameState()
+    static uint32_t GetGameState()
     {
         return gameState;
     }
-    static bool getLevelLoaded()
+    static bool GetLevelLoaded()
     {
         return levelLoaded;
     }
-    static uint32_t getGameLevel()
+    static uint32_t GetGameLevel()
     {
         return currentLevel;
     }
 
 
-    static bool checkGameOpen()
+    static bool CheckGameOpen()
     {
         MemoryAccess::setExecutableName("Meridian.exe");
         return MemoryAccess::readProcess();
     }
-    static void readInstanices()
+    static void ReadInstanices()
     {
-        readGameState();
-        readLevelLoaded();
-        readGameLevel();
+        ReadGameState();
+        ReadLevelLoaded();
+        ReadGameLevel();
     }
+
     static std::mutex guardUpdate;
+    static std::mutex guardReadPacket;
+    static std::mutex guardWritePacket;
 public:
     static void Start()
     {
@@ -71,89 +74,27 @@ public:
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
 
-        //temporary
-        /*
-
-        //testing finding by X,Y ???
-        uint32_t bilboPosXPTR = MemoryAccess::readData(0x0075BA3C);
-
-        float BX = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7C4 + bilboPosXPTR));
-        float BY = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7C4 + 0x4 + bilboPosXPTR));
-        float BZ = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7C4 + 0x8 + bilboPosXPTR));
-        float RY = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0x7AC + bilboPosXPTR));
-
-        uint32_t InteractivePtrX = MemoryAccess::findObjectAddressByGUID(MemoryAccess::readData(0x0076F648), 0x41F77800);
-
-        float IX = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0xC + 0x8 + InteractivePtrX));
-        float IY = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0xC + 0x8 + 0x4 + InteractivePtrX));
-        float IZ = MemoryAccess::uint32ToFloat(MemoryAccess::readData(0xC + 0x8 + 0x8 + InteractivePtrX));
-
-    
-
-        float dx = BX - IX;
-        float dy = abs(BY - IY);
-        float dz = abs(BZ - IZ);
-
-        static float dxErr = 0;
-        static float dyErr = 0;
-        static float prevDx;
-        static float prevDy;
-
-        if (abs(dx - prevDx) > dxErr && prevDx != 0)
-        {
-            dxErr = abs(dx - prevDx);
-        }
-        prevDx = dx;
-        if (abs(dy - prevDy) > dyErr && prevDy != 0)
-        {
-            dyErr = abs(dy - prevDy);
-        }
-        prevDy = dy;
-
-
-        float dxz = sqrt(dx * dx + dz * dz);
-        float dxy = sqrt(dx * dx + dy * dy);
-
-        //float anglexXY = atan2(dy, abs(dx)); // Calculate the angle in the XY plane
-        float anglexXY = acos((dx * dx) / (dxy * abs(dx)));
-        float newIX = BX + dxy * cos(anglexXY); // Project along the XY plane
-        float newIY = BY + dxy * sin(anglexXY);
-        float newIZ = BZ + dz * sin(anglexXY); // Project along the XZ plane
-
-
-        float DistanceXYZ = sqrt((dx * dx + dy*dy) + dz* dz);
-
-
-        std::cout << "DXErr: " << dxErr << " | DYErr:" << dyErr << std::endl;
-        std::cout << "dx: " << dx << " | dy:" << dy << " | dz:" << dz << " | ay:"  << anglexXY << std::endl;
-        std::cout << "BX: " << BX << " | BY:" << BY << " | BZ:" << BZ << std::endl;
-        std::cout << "ix: " << newIX << " | iy:" << newIY << " | iz:" << newIZ << std::endl;
-        std::cout << "IX: " << IX << " | IY:" << IY << " | IZ:" << IZ << std::endl;
-        std::cout << "DistanceXYZ = " << DistanceXYZ << std::endl;
-        std::cout << "\033[36mdistance: \033[0m" << dxy << std::endl;
-        // end testing 
-        // uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
-        //std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;
-        */
-        // end temporary 
-        if (!checkGameOpen())
-        {
+        if (!CheckGameOpen())
             return;
-        }
+        MemoryAccess::udpateProcess();
 
-        readInstanices();
+        ReadInstanices();
+
+      /*  uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
+        std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;*/
+
 
         // handle game states
         {
             // game state
             static uint32_t previousState;
             static uint32_t currentState;
-            currentState = getGameState();
+            currentState = GetGameState();
 
             // level loaded
             static bool previousLevelLoaded;
             static bool currentLevelLoaded;
-            currentLevelLoaded = getLevelLoaded();
+            currentLevelLoaded = GetLevelLoaded();
 
             // new level
             if (previousLevelLoaded != currentLevelLoaded && currentLevelLoaded)
@@ -187,8 +128,12 @@ public:
         }
     }
     
-    static void readPackets(std::vector<uint32_t>& packets, uint32_t playerIndex) 
+    static void ReadPacket(std::vector<uint32_t>& packets, uint32_t playerIndex) 
     {
+        std::lock_guard<std::mutex> guard(guardReadPacket);
+        if (!CheckGameOpen())
+            return;
+
         // convert packets into GamePackets
         std::vector<GamePacket> gamePackets;
         gamePackets = GamePacket::packetsToGamePackets(packets);
@@ -198,24 +143,37 @@ public:
         {
             for (uint32_t reader : gamePacket.getReadersIndexes())
             {
-                clientEntities[reader]->ReadPackets(gamePacket, playerIndex);
+                clientEntities[reader]->ReadPacket(gamePacket, playerIndex);
             }
         }
     }
-    static std::vector<uint32_t> setPackets()
+    static std::vector<uint32_t> WritePacket()
     {
+        std::lock_guard<std::mutex> guard(guardWritePacket);
+      
+
         std::vector<uint32_t> packets;      // packets to send
         std::vector<uint32_t> entityPackets;// entity packets
         std::vector<GamePacket> gamePackets;// packeof the game
+        std::vector<uint32_t> processedGamePacket;
 
-        // get packets from all entities
-        for (ClientEntity* e : clientEntities)
+        if (!CheckGameOpen())
         {
-            gamePackets.push_back(e->SetPackets());
+            //indicate the end of packet
+            processedGamePacket = GamePacket::lastPacket();
+            packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
+            return packets;
+
         }
 
-        // end of packets
-        std::vector<uint32_t> processedGamePacket;
+        // get game packet from all entities
+        for (ClientEntity* e : clientEntities)
+        {
+            gamePackets.push_back(e->WritePacket());
+            e->FinishedWritePacket();
+        }
+
+        // get packet from game packet
         for (GamePacket gamePacket : gamePackets)
         {
             processedGamePacket = gamePacket.getPacket();
@@ -229,5 +187,4 @@ public:
         return packets;
     }
 };
-
 

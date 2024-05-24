@@ -13,31 +13,23 @@ class OtherPlayer : public ClientEntity
 private:
 	static const std::vector<uint32_t> GUIDs;
 	static std::vector<NPC> otherPlayers;
-	bool processPackets;
 public:
 	
 	// packages
-	void ReadPackets(GamePacket gamePaket, uint32_t playerIndex) override
+	void ReadPacket(GamePacket gamePaket, uint32_t playerIndex) override
 	{
-		// Get Players characters
-		NPC& otherPlayer = otherPlayers[playerIndex];
-
 		// Check type
 		if (gamePaket.getPacketType() != 0x1)
-		{
 			return;
-		}
 		// Check size
 		if (gamePaket.getGameDataSize() == 0)
-		{
 			return;
-		}
-
 		// Not processing packets state
 		if (!processPackets)
-		{
 			return;
-		}
+
+		// Get Players characters
+		NPC& otherPlayer = otherPlayers[playerIndex];
 
 		std::vector<uint32_t> gameData = gamePaket.getGameData();
 		
@@ -73,7 +65,7 @@ public:
 		std::cout << "A: " << animBilbo << std::endl << std::endl;
 		std::cout << "\033[0m";
 	}
-	GamePacket SetPackets() override
+	GamePacket WritePacket() const override
 	{
 		if (!processPackets)
 			return GamePacket();
@@ -89,8 +81,8 @@ public:
 	}
 	void EnterNewLevel() override
 	{
-		processPackets = true;
 		ReadPtrs();
+		processPackets = true;
 	}
 	void ExitLevel() override
 	{
