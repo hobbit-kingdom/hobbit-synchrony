@@ -12,7 +12,7 @@ public:
 	}
 	std::vector<uint32_t> m_clientsIDs;
 	std::vector<uint32_t> m_garbageIDs;
-	const uint32_t m_MAX_CLIENTS = 3;
+	const uint32_t m_MAX_CLIENTS = 4;
 
 protected:
 	bool OnClientConnect(std::shared_ptr<olc::net::connection<PacketType>> client) override

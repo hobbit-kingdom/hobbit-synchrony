@@ -10,6 +10,7 @@
 
 #include <cstring> // for std::memcpy
 #include <type_traits> // for std::enable_if and std::is_arithmetic
+#include <mutex>
 
 
 using PROCESS = HANDLE;
@@ -37,16 +38,22 @@ static std::string executableName = "";
 
 class MemoryAccess
 {
+private:
+	static std::mutex guardWriteData;
+	static std::mutex guardProcess;
+
 public:
 
 	static void udpateProcess()
 	{
+		std::lock_guard<std::mutex> guard(guardProcess);
 		if(Process)
 			CloseHandle(Process);
 		Process = readProcess();
 	}
 	static bool checkProcess()
 	{
+		std::lock_guard<std::mutex> guard(guardProcess);
 		if (!Process) {
 			std::cout << "NO PROCESS ASSIGNED" << std::endl;
 			return 0;
@@ -106,6 +113,7 @@ public:
 	template<typename T>
 	static T writeData(LPVOID Address, T data)
 	{
+		std::lock_guard<std::mutex> guard(guardWriteData);
 		if (!checkProcess()) return 0;
 		T temporary = data;
 		if (!ReadProcessMemory(Process, Address, &temporary, sizeof(temporary), NULL)) { // Reading the value from memory

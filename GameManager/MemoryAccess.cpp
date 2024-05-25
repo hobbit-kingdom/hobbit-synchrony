@@ -1,7 +1,8 @@
 #include "MemoryAccess.h"
 
 HANDLE MemoryAccess::Process;
-
+std::mutex MemoryAccess::guardWriteData;
+std::mutex MemoryAccess::guardProcess;
 //@return name of attached executable
 std::string MemoryAccess::getExecutableName() {
 	return executableName;

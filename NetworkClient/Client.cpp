@@ -10,11 +10,108 @@
 #define OLC_PGEX_TRANSFORMEDVIEW
 
 #include <unordered_map>
+#include <queue>
+#include <stack>
+class OtherClient
+{
+public:
+	OtherClient(uint32_t newID) : id(newID) {}
+	uint32_t id;
+	// atomic:    thread protection
+	// queue:    packets
+	// vector:    game packet
+	std::stack<std::vector<uint32_t>> gameStatePacket;
+	std::mutex guardPackets;
+
+	static std::vector<OtherClient> otherClients;
+	static std::mutex guardOtherClients;
+
+	// Custom assignment operator to properly handle the queue member
+	OtherClient& operator=(const OtherClient& other)
+	{
+		if (this != &other)
+		{
+			id = other.id;
+			// Copy queue contents
+			gameStatePacket = other.gameStatePacket;
+		}
+		return *this;
+	}
+
+	void PushPacket(std::vector<uint32_t> pushPacket)
+	{
+		std::lock_guard<std::mutex> guard(guardPackets);
+		gameStatePacket.push(pushPacket);
+	}
+	std::vector<uint32_t> GetPacket()
+	{
+		std::lock_guard<std::mutex> guard(guardPackets);
+		if (gameStatePacket.empty())
+			return std::vector<uint32_t>();
+		return gameStatePacket.top();
+	}
+	void ClearPacket()
+	{
+		std::lock_guard<std::mutex> guard(guardPackets);
+		std::stack<std::vector<uint32_t>>().swap(gameStatePacket);
+	}
+
+
+	static uint32_t GetIndex(uint32_t clientID)
+	{
+		std::lock_guard<std::mutex> guard(guardOtherClients);
+		for (uint32_t i = 0; i < otherClients.size(); ++i)
+		{
+			if (otherClients[i].id == clientID)
+				return i;
+		}
+		return 0xFFFFFFFF; // Not found
+	}
+	// Move constructor
+	OtherClient(OtherClient&& other) noexcept : id(other.id), gameStatePacket(std::move(other.gameStatePacket)) {}
+	static bool AddClient(uint32_t addID)
+	{
+		std::lock_guard<std::mutex> guard(guardOtherClients);
+		// Use emplace_back to construct the OtherClient object in-place
+		otherClients.emplace_back(addID);
+		return true;
+	}
+
+
+	static bool RemoveClient(uint32_t removeID)
+	{
+		std::lock_guard<std::mutex> guard(guardOtherClients);
+		for (auto it = otherClients.begin(); it != otherClients.end(); ++it)
+		{
+			if (it->id == removeID)
+			{
+				otherClients.erase(it);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static std::vector<std::vector<uint32_t>> GetStatePackets()
+	{
+		std::vector<std::vector<uint32_t>> statePackets;
+		for (OtherClient& e : otherClients)
+		{
+			statePackets.push_back(e.GetPacket());
+			e.ClearPacket();
+		}
+		return statePackets;
+	}
+
+};
+std::mutex OtherClient::guardOtherClients;
+std::vector<OtherClient> OtherClient::otherClients;
+
+
 class Client : public olc::net::client_interface<PacketType>
 {
 private:
 	uint32_t m_myID = 0;
-	std::vector<uint32_t> m_connectedIDs;
 
 	std::thread m_updateThread;
 	std::thread m_processThread;
@@ -22,27 +119,28 @@ private:
 	std::thread m_sendThread;
 
 	std::atomic<bool> m_waitingForConnection = true;
-	std::atomic<bool> m_stopThreads = false ;
+	std::atomic<bool> m_stopThreads = true;
 
 	const std::atomic<uint32_t> m_UPDATE_SPEED = 200;
 	const std::atomic<uint32_t> m_PROCESS_SPEED = 200;
 	const std::atomic<uint32_t> m_READ_SPEED = 200;
 	const std::atomic<uint32_t> m_SEND_SPEED = 200;
 
-	std::vector<std::vector<uint32_t>> m_gamePackets;
+	std::vector<uint32_t> m_currentPacket;
 
-	std::mutex m_guardGameMsg;
+	//q_Packets, v_GamePacket
+	std::queue<std::vector<uint32_t>> m_gameEventPacket;
+	std::mutex guardGameEventPacket;
 
 public:
 	Client()
 	{
-		std::cout << "Client Created" << std::endl;
-
 		if (!OnUserCreate())
 		{
 			return;
 		}
 
+		m_stopThreads = false;
 		// Create thread for reading and sending messages
 		m_updateThread = std::thread(&Client::UpdateGame, this);
 		m_processThread = std::thread(&Client::ProcessMessages, this);
@@ -50,6 +148,7 @@ public:
 		m_sendThread = std::thread(&Client::SendMessages, this);
 	}
 	~Client() {
+		if (m_stopThreads) return;
 		// Signal threads to stop and wait for them to finish
 		m_stopThreads = true;
 		m_updateThread.join();
@@ -60,6 +159,8 @@ public:
 	bool OnUserCreate()
 	{
 		std::string ip;
+
+		// connect to server
 		do
 		{
 			std::cout << "To exit press [q]" << std::endl;
@@ -69,43 +170,25 @@ public:
 
 			if (ip.at(0) == 'q')
 				return false;
-
-		} while (!Connect(ip, 60000));
+			Connect(ip, 60000);
+		} while (!IsConnected());
 		return true;
 	}
 
-	std::vector<uint32_t> PopGamePacket()
+	std::vector<std::vector<uint32_t>> GetGameEventsPacket()
 	{
-		std::lock_guard<std::mutex> guard(m_guardGameMsg);
-
-		if (m_gamePackets.empty())
-			return std::vector<uint32_t>();
-
-		std::vector<uint32_t> firstElement = m_gamePackets.front();
-		m_gamePackets.erase(m_gamePackets.begin());
-		return firstElement;
+		std::lock_guard<std::mutex> guard(guardGameEventPacket);
+		std::vector<std::vector<uint32_t>> finalPacket;
+		while (!m_gameEventPacket.empty())
+		{
+			finalPacket.push_back(m_gameEventPacket.front());
+			m_gameEventPacket.pop();
+		}
+		return finalPacket;
 	}
-	void PushGamePacket(std::vector<uint32_t> pushMsg)
+	void PushEventPacket(std::vector<uint32_t> packet)
 	{
-		std::lock_guard<std::mutex> guard(m_guardGameMsg);
-		std::cout << "~Unprocessed Packets Size: " <<  m_gamePackets.size() << std::endl;
-		m_gamePackets.push_back(pushMsg);
-	}
-	std::vector<uint32_t> BackGameMsg()
-	{
-		std::lock_guard<std::mutex> guard(m_guardGameMsg);
-		if (m_gamePackets.empty())
-			return std::vector<uint32_t>();
 
-		std::vector<uint32_t> lastElement = m_gamePackets.back();
-		m_gamePackets.pop_back();
-
-		return lastElement;
-	}
-	void ClearGameMsg()
-	{
-		std::lock_guard<std::mutex> guard(m_guardGameMsg);
-		m_gamePackets.clear();
 	}
 
 	// Update Game
@@ -113,12 +196,12 @@ public:
 	{
 		while (!m_stopThreads)
 		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_UPDATE_SPEED));
 			if (m_waitingForConnection)
-				continue; 
+				continue;
 
 			GameManager::Update();
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(m_UPDATE_SPEED));
 		}
 	}
 	// Process Message into the game
@@ -126,22 +209,34 @@ public:
 	{
 		while (!m_stopThreads)
 		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(m_PROCESS_SPEED));
 			if (m_waitingForConnection)
 				continue;
+			
+			//pakcets of gamepackets
+			std::vector<std::vector<uint32_t>> gamePackets;
+			std::vector<std::vector<uint32_t>> gameEvents = GetGameEventsPacket();
+			std::vector<std::vector<uint32_t>> gameStates = OtherClient::GetStatePackets();
 
-			std::vector<uint32_t> m_gamePackets = BackGameMsg();
-			ClearGameMsg();
-
-			if (m_gamePackets.empty())
+			// Copy packets
+			gamePackets.insert(gamePackets.end(), gameEvents.begin(), gameEvents.end());
+			gamePackets.insert(gamePackets.end(), gameStates.begin(), gameStates.end());
+	
+			// check if empty
+			if (gamePackets.empty())
 				continue;
+			// process each packet
+			for (std::vector<uint32_t> e : gamePackets)
+			{
+				if (e.empty())
+					continue;
 
-			uint32_t indexClient = m_gamePackets.back();
-			m_gamePackets.pop_back();
+				uint32_t indexClient = e.back();
+				e.pop_back();
 
-			// read packets
-			GameManager::ReadPacket(m_gamePackets, indexClient);
-
-			std::this_thread::sleep_for(std::chrono::milliseconds(m_PROCESS_SPEED));
+				// read packets
+				GameManager::ReadPacket(e, indexClient);
+			}
 		}
 	}
 	// Function for reading messages
@@ -149,11 +244,13 @@ public:
 	{
 		while (!m_stopThreads)
 		{
+				std::this_thread::sleep_for(std::chrono::milliseconds(m_READ_SPEED));
 			if (!IsConnected())
 				break;
 
 			while (!Incoming().empty())
 			{
+
 				auto msg = Incoming().pop_front().msg;
 				std::cout << "Buffer Size: " << Incoming().count() << std::endl;
 
@@ -178,14 +275,17 @@ public:
 
 				case(PacketType::Game_AddClient):
 				{
-					uint32_t desc;
-					msg >> desc;
-					m_connectedIDs.push_back(desc);
+					uint32_t addedClientID;
+					msg >> addedClientID;
 
 					// Connected to Server
-					if (desc == m_myID)
+					if (addedClientID == m_myID)
 					{
 						m_waitingForConnection = false;
+					}
+					else
+					{
+						OtherClient::AddClient(addedClientID);
 					}
 					break;
 				}
@@ -195,11 +295,8 @@ public:
 					uint32_t removeClientID = 0;
 					msg >> removeClientID;
 
-					//remove the clients id
-					auto it = std::find(m_connectedIDs.begin(), m_connectedIDs.end(), removeClientID);
-					if (it != m_connectedIDs.end()) {
-						m_connectedIDs.erase(it);
-					}
+
+					OtherClient::RemoveClient(removeClientID);
 
 					break;
 				}
@@ -211,11 +308,32 @@ public:
 					msg >> connectedID;
 
 					// find the index of id
-					uint32_t indexClient;
-					auto it = std::find(m_connectedIDs.begin(), m_connectedIDs.end(), connectedID);
-					if (it != m_connectedIDs.end()) {
-						indexClient = std::distance(m_connectedIDs.begin(), it) - 1;
+					uint32_t indexClient = OtherClient::GetIndex(connectedID);
+					if (indexClient == 0xFFFFFFFF)
+						break;
+					// get message size
+					uint32_t gameMsgSize;
+					msg >> gameMsgSize;
+
+					// get message game data 
+					std::vector<uint32_t> gameMsgs(gameMsgSize, 0);
+					for (uint32_t& m_gamePackets : gameMsgs)
+					{
+						msg >> m_gamePackets;
 					}
+					gameMsgs.push_back(indexClient);
+					OtherClient::otherClients[indexClient].PushPacket(gameMsgs);
+					break;
+				}
+				case(PacketType::Game_EventClient):
+				{
+					continue;
+					// connectedID
+					uint32_t connectedID;
+					msg >> connectedID;
+
+					// find the index of id
+					uint32_t indexClient = OtherClient::GetIndex(connectedID);
 
 					// get message size
 					uint32_t gameMsgSize;
@@ -228,12 +346,11 @@ public:
 						msg >> m_gamePackets;
 					}
 					gameMsgs.push_back(indexClient);
-					PushGamePacket(gameMsgs);
+					PushEventPacket(gameMsgs);
 					break;
 				}
 				}
 			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(m_READ_SPEED));
 		}
 	}
 	// Function for sending messages
@@ -267,13 +384,13 @@ public:
 
 int main()
 {
-    Client client;
-    char a;
-    do
-    {
+	Client client;
+	char a;
+	do
+	{
 		std::cout << "To exit press [q]: ";
-        std::cin >> a;
-        std::cout << std::endl;
-    } while (a != 'q');
-    return 0;
+		std::cin >> a;
+		std::cout << std::endl;
+	} while (a != 'q');
+	return 0;
 }

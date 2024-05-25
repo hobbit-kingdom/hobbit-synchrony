@@ -121,7 +121,9 @@ public:
 	}
 
 	// Returns object pointer
-	uint32_t getObjectPtr() { return objectAddress; }
+	uint32_t getObjectPtr() { 
+		return objectAddress; 
+	}
 
 	// writes new GUID 
 	// modifies game file

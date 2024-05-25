@@ -130,7 +130,7 @@ public:
     
     static void ReadPacket(std::vector<uint32_t>& packets, uint32_t playerIndex) 
     {
-        std::lock_guard<std::mutex> guard(guardReadPacket);
+        std::lock_guard<std::mutex> guard(guardUpdate);
         if (!CheckGameOpen())
             return;
 
@@ -149,7 +149,7 @@ public:
     }
     static std::vector<uint32_t> WritePacket()
     {
-        std::lock_guard<std::mutex> guard(guardWritePacket);
+        std::lock_guard<std::mutex> guard(guardUpdate);
       
 
         std::vector<uint32_t> packets;      // packets to send

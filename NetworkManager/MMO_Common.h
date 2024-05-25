@@ -17,4 +17,5 @@ enum class PacketType : uint32_t
 	Game_AddClient,
 	Game_RemoveClient,
 	Game_UpdateClient,
+	Game_EventClient,
 };
