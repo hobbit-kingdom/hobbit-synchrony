@@ -110,12 +110,16 @@ protected:
 			SendPacketAllClients(pkt, client);
 			break;
 		}
+		case PacketType::Game_EventClient:
+		{
+			// Simply bounce update to everyone except incoming client
+			SendPacketAllClients(pkt, client);
+			break;
+		}
 
 		}
 
 	}
-
-
 
 };
 

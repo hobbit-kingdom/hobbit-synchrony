@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 
-
 class GamePacket
 {
 	uint32_t packetReadType = 0;
@@ -96,13 +95,18 @@ public:
 	{
 		std::vector<uint32_t> finalPacket;
 
-		finalPacket.push_back(packetReadType);
+		if (gameData.empty())
+			return std::vector<uint32_t>();
+
+
 		if (readersIndexes.size() == 0)
 		{
-			return finalPacket;
+			return std::vector<uint32_t>();
 		}
 
-
+		finalPacket.push_back(packetReadType);
+		
+		
 		// set recievers indexes
 		if (readersIndexes.size() > 1)
 			finalPacket.push_back(PACKET_FlAG);

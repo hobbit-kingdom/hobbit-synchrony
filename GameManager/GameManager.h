@@ -147,30 +147,33 @@ public:
             }
         }
     }
-    static std::vector<uint32_t> writePacket()
+    static void writePacket(std::vector<uint32_t>& snapshotPackets, std::vector<uint32_t>& eventPackets)
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
       
 
-        std::vector<uint32_t> packets;      // packets to send
-        std::vector<uint32_t> packetsEvents;      // packets to send
         std::vector<uint32_t> entityPackets;// entity packets
         std::vector<GamePacket> gamePackets;// packeof the game
         std::vector<uint32_t> processedGamePacket;
 
         if (!checkGameOpen())
         {
+            if (snapshotPackets.empty())
+                return;
+
             //indicate the end of packet
             processedGamePacket = GamePacket::lastPacket();
-            packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
-            return packets;
-
+            snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
+            return;
         }
 
         // get game packet from all entities
+        GamePacket pkt;
         for (ClientEntity* e : clientEntities)
         {
-            gamePackets.push_back(e->writePacket());
+            pkt = e->writePacket();
+            if(pkt.getGameDataSize() != 0)
+                gamePackets.push_back(pkt);
             e->finishedWritePacket();
         }
 
@@ -178,22 +181,23 @@ public:
         for (GamePacket gamePacket : gamePackets)
         {
             processedGamePacket = gamePacket.getPacket();
+            // snapshot packet
             if (processedGamePacket.front() == 0x0)
             {
-                packets.insert(packets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
+                snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
             }
-            else
+            else //event packet
             {
-                packetsEvents.insert(packetsEvents.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
+                eventPackets.insert(eventPackets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
             }
         }
 
         //indicate the end of packet
         processedGamePacket = GamePacket::lastPacket();
-        packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
-        packetsEvents.insert(packetsEvents.end(), processedGamePacket.begin(), processedGamePacket.end());
-
-        return packets;
+        if(!snapshotPackets.empty())
+            snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
+        if (!eventPackets.empty())
+            eventPackets.insert(eventPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
     }
 };
 

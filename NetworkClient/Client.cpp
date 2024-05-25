@@ -188,7 +188,9 @@ public:
 	}
 	void pushEventPacket(std::vector<uint32_t> packet)
 	{
-
+		std::lock_guard<std::mutex> guard(m_guardGameEventPacket);
+		m_gameEventPacket.push(packet);
+		std::cout << "EventPackets: " << m_gameEventPacket.size() << std::endl;
 	}
 
 	// Update Game
@@ -332,13 +334,14 @@ public:
 				}
 				case(PacketType::Game_EventClient):
 				{
-					continue;
 					// connectedID
 					uint32_t connectedID;
 					pkt >> connectedID;
 
 					// find the index of id
 					uint32_t indexClient = otherClient::getIndex(connectedID);
+					if (indexClient == 0xFFFFFFFF)
+						break;
 
 					// get message size
 					uint32_t gameMsgSize;
@@ -367,20 +370,42 @@ public:
 			if (!m_waitingForConnection)
 			{
 				// set the packets
-				std::vector<uint32_t> packets = GameManager::writePacket();
+				std::vector<uint32_t> snpshotPackets;
+				std::vector<uint32_t> eventPackets;
+				GameManager::writePacket(snpshotPackets, eventPackets);
 
-				// send message
-				net::packet<PacketType> pkt;
-				pkt.header.id = PacketType::Game_Snapshot;
-				// Send player data
-				for (uint32_t i = packets.size(); i-- > 0;)
+				if (!snpshotPackets.empty())
 				{
-					pkt << packets[i];
+					// send message
+					net::packet<PacketType> pkt;
+					pkt.header.id = PacketType::Game_Snapshot;
+					// Send player data
+					for (uint32_t i = snpshotPackets.size(); i-- > 0;)
+					{
+						pkt << snpshotPackets[i];
+					}
+
+					pkt << snpshotPackets.size();
+					pkt << m_myID;
+					Send(pkt);
+				}
+				if (!eventPackets.empty())
+				{
+					// send message
+					net::packet<PacketType> eventPkt;
+					eventPkt.header.id = PacketType::Game_EventClient;
+					// Send player data
+					for (uint32_t i = eventPackets.size(); i-- > 0;)
+					{
+						eventPkt << eventPackets[i];
+					}
+
+					eventPkt << eventPackets.size();
+					eventPkt << m_myID;
+					Send(eventPkt);
 				}
 
-				pkt << packets.size();
-				pkt << m_myID;
-				Send(pkt);
+			
 			}
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_SEND_SPEED));
 		}
