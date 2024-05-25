@@ -7,10 +7,10 @@
 #include <queue>
 #include <stack>
 
-#include "../NetworkManager/MMO_Common.h"
+#include "../NetworkManager/PacketType.h"
 #include "../GameManager/GameManager.h"
 
-#define OLC_PGEX_TRANSFORMEDVIEW
+#define CLIENT
 
 
 class otherClient
@@ -106,7 +106,7 @@ std::mutex otherClient::guardOtherClients;
 std::vector<otherClient> otherClient::otherClients;
 
 
-class Client : public olc::net::client_interface<PacketType>
+class Client : public net::client_interface<PacketType>
 {
 private:
 	uint32_t m_myID = 0;
@@ -194,7 +194,7 @@ public:
 	// Update Game
 	void updateGame()
 	{
-		while (!m_stopThreads)
+		while (!m_stopThreads && IsConnected())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_UPDATE_SPEED));
 			if (m_waitingForConnection)
@@ -207,7 +207,7 @@ public:
 	// Process Message into the game
 	void processMessages()
 	{
-		while (!m_stopThreads)
+		while (!m_stopThreads && IsConnected())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_PROCESS_SPEED));
 			if (m_waitingForConnection)
@@ -242,7 +242,7 @@ public:
 	// Function for reading messages
 	void readMessages()
 	{
-		while (!m_stopThreads)
+		while (!m_stopThreads && IsConnected())
 		{
 				std::this_thread::sleep_for(std::chrono::milliseconds(m_READ_SPEED));
 			if (!IsConnected())
@@ -251,24 +251,24 @@ public:
 			while (!Incoming().empty())
 			{
 
-				auto msg = Incoming().pop_front().msg;
+				auto pkt = Incoming().pop_front().pkt;
 				std::cout << "Buffer Size: " << Incoming().count() << std::endl;
 
-				switch (msg.header.id)
+				switch (pkt.header.id)
 				{
 				case(PacketType::Client_Accepted):
 				{
 					std::cout << "Server accepted client - you're in!\n";
-					olc::net::message<PacketType> msg;
-					msg.header.id = PacketType::Client_RegisterWithServer;
-					Send(msg);
+					net::packet<PacketType> pkt;
+					pkt.header.id = PacketType::Client_RegisterWithServer;
+					Send(pkt);
 					break;
 				}
 
 				case(PacketType::Client_AssignID):
 				{
 					// Server is assigning us OUR id
-					msg >> m_myID;
+					pkt >> m_myID;
 					std::cout << "Assigned Client ID = " << m_myID << "\n";
 					break;
 				}
@@ -276,7 +276,7 @@ public:
 				case(PacketType::Game_AddClient):
 				{
 					uint32_t addedClientID;
-					msg >> addedClientID;
+					pkt >> addedClientID;
 
 					// Connected to Server
 					if (addedClientID == m_myID)
@@ -293,19 +293,24 @@ public:
 				case(PacketType::Game_RemoveClient):
 				{
 					uint32_t removeClientID = 0;
-					msg >> removeClientID;
-
+					pkt >> removeClientID;
+					if (removeClientID == m_myID)
+					{
+						std::cout << "You are disconected from the server" << std::endl;
+						m_stopThreads = true;
+						break;
+					}
 
 					otherClient::removeClient(removeClientID);
 
 					break;
 				}
 
-				case(PacketType::Game_UpdateClient):
+				case(PacketType::Game_Snapshot):
 				{
 					// connectedID
 					uint32_t connectedID;
-					msg >> connectedID;
+					pkt >> connectedID;
 
 					// find the index of id
 					uint32_t indexClient = otherClient::getIndex(connectedID);
@@ -313,13 +318,13 @@ public:
 						break;
 					// get message size
 					uint32_t gameMsgSize;
-					msg >> gameMsgSize;
+					pkt >> gameMsgSize;
 
 					// get message game data 
 					std::vector<uint32_t> gameMsgs(gameMsgSize, 0);
 					for (uint32_t& m_gamePackets : gameMsgs)
 					{
-						msg >> m_gamePackets;
+						pkt >> m_gamePackets;
 					}
 					gameMsgs.push_back(indexClient);
 					otherClient::otherClients[indexClient].pushPacket(gameMsgs);
@@ -330,20 +335,20 @@ public:
 					continue;
 					// connectedID
 					uint32_t connectedID;
-					msg >> connectedID;
+					pkt >> connectedID;
 
 					// find the index of id
 					uint32_t indexClient = otherClient::getIndex(connectedID);
 
 					// get message size
 					uint32_t gameMsgSize;
-					msg >> gameMsgSize;
+					pkt >> gameMsgSize;
 
 					// get message game data 
 					std::vector<uint32_t> gameMsgs(gameMsgSize, 0);
 					for (uint32_t& m_gamePackets : gameMsgs)
 					{
-						msg >> m_gamePackets;
+						pkt >> m_gamePackets;
 					}
 					gameMsgs.push_back(indexClient);
 					pushEventPacket(gameMsgs);
@@ -356,7 +361,7 @@ public:
 	// Function for sending messages
 	void sendMessages()
 	{
-		while (!m_stopThreads)
+		while (!m_stopThreads && IsConnected())
 		{
 			// Capture the start time
 			if (!m_waitingForConnection)
@@ -365,17 +370,17 @@ public:
 				std::vector<uint32_t> packets = GameManager::writePacket();
 
 				// send message
-				olc::net::message<PacketType> msg;
-				msg.header.id = PacketType::Game_UpdateClient;
+				net::packet<PacketType> pkt;
+				pkt.header.id = PacketType::Game_Snapshot;
 				// Send player data
 				for (uint32_t i = packets.size(); i-- > 0;)
 				{
-					msg << packets[i];
+					pkt << packets[i];
 				}
 
-				msg << packets.size();
-				msg << m_myID;
-				Send(msg);
+				pkt << packets.size();
+				pkt << m_myID;
+				Send(pkt);
 			}
 			std::this_thread::sleep_for(std::chrono::milliseconds(m_SEND_SPEED));
 		}

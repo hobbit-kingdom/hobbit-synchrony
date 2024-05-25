@@ -1,12 +1,13 @@
 #include <iostream>
 #include <unordered_map>
+#include <thread>
+#include <atomic>
+#include "../NetworkManager/PacketType.h"
 
-#include "../NetworkManager/MMO_Common.h"
-
-class Server : public olc::net::server_interface<PacketType>
+class Server : public net::server_interface<PacketType>
 {
 public:
-	Server(uint16_t nPort) : olc::net::server_interface<PacketType>(nPort)
+	Server(uint16_t nPort) : net::server_interface<PacketType>(nPort)
 	{
 
 	}
@@ -15,7 +16,7 @@ public:
 	const uint32_t m_MAX_CLIENTS = 4;
 
 protected:
-	bool OnClientConnect(std::shared_ptr<olc::net::connection<PacketType>> client) override
+	bool OnClientConnect(std::shared_ptr<net::connection<PacketType>> client) override
 	{
 		// check if to many users
 		if (m_clientsIDs.size() >= m_MAX_CLIENTS)
@@ -24,16 +25,16 @@ protected:
 		return true;
 	}
 
-	void OnClientValidated(std::shared_ptr<olc::net::connection<PacketType>> client) override
+	void OnClientValidated(std::shared_ptr<net::connection<PacketType>> client) override
 	{
 		// Client passed validation check, so send them a message informing
 		// them they can continue to communicate
-		olc::net::message<PacketType> msg;
-		msg.header.id = PacketType::Client_Accepted;
-		client->Send(msg);
+		net::packet<PacketType> pkt;
+		pkt.header.id = PacketType::Client_Accepted;
+		client->Send(pkt);
 	}
 
-	void OnClientDisconnect(std::shared_ptr<olc::net::connection<PacketType>> client) override
+	void OnClientDisconnect(std::shared_ptr<net::connection<PacketType>> client) override
 	{
 		if (client)
 		{
@@ -47,24 +48,24 @@ protected:
 		}
 	}
 
-	void OnMessage(std::shared_ptr<olc::net::connection<PacketType>> client, olc::net::message<PacketType>& msg) override
+	void OnRecievePacket(std::shared_ptr<net::connection<PacketType>> client, net::packet<PacketType>& pkt) override
 	{
 		// notify garbage they are garbage and remove them from the list
 		if (!m_garbageIDs.empty())
 		{
 			for (auto pid : m_garbageIDs)
 			{
-				olc::net::message<PacketType> m;
+				net::packet<PacketType> m;
 				m.header.id = PacketType::Game_RemoveClient;
 				m << pid;
 				std::cout << "Removing " << pid << "\n";
-				MessageAllClients(m);
+				SendPacketAllClients(m);
 			}
 			m_garbageIDs.clear();
 		}
 
 		// type of message
-		switch (msg.header.id)
+		switch (pkt.header.id)
 		{
 		case PacketType::Client_RegisterWithServer:
 		{
@@ -73,26 +74,26 @@ protected:
 			msgClientID = client->GetID();
 
 			// message assing id
-			olc::net::message<PacketType> msgSendID;
+			net::packet<PacketType> msgSendID;
 			msgSendID.header.id = PacketType::Client_AssignID;
 			msgSendID << msgClientID;
-			MessageClient(client, msgSendID);
+			SendPacketClient(client, msgSendID);
 
 			m_clientsIDs.push_back(msgClientID);
 
 			// message add player
-			olc::net::message<PacketType> msgAddPlayer;
+			net::packet<PacketType> msgAddPlayer;
 			msgAddPlayer.header.id = PacketType::Game_AddClient;
 			msgAddPlayer << msgClientID;
-			MessageAllClients(msgAddPlayer);
+			SendPacketAllClients(msgAddPlayer);
 
 			// message everyone added player
 			for (const auto& m_clientID : m_clientsIDs)
 			{
-				olc::net::message<PacketType> msgAddOtherPlayers;
+				net::packet<PacketType> msgAddOtherPlayers;
 				msgAddOtherPlayers.header.id = PacketType::Game_AddClient;
 				msgAddOtherPlayers << m_clientID;
-				MessageClient(client, msgAddOtherPlayers);
+				SendPacketClient(client, msgAddOtherPlayers);
 			}
 
 			break;
@@ -103,10 +104,10 @@ protected:
 			break;
 		}
 
-		case PacketType::Game_UpdateClient:
+		case PacketType::Game_Snapshot:
 		{
 			// Simply bounce update to everyone except incoming client
-			MessageAllClients(msg, client);
+			SendPacketAllClients(pkt, client);
 			break;
 		}
 
@@ -114,17 +115,44 @@ protected:
 
 	}
 
+
+
 };
+
+
+std::atomic<bool> m_stopThreads = false;
+void UpdateServer(Server& server)
+{
+	while (m_stopThreads)
+	{
+		server.update(-1, true);
+	}
+}
 
 int main()
 {
 	std::cout << "Server is Running" << std::endl;
+
+	// start server
 	Server server(60000);
 	server.start();
-	while (1)
+
+	//updateserver
+	m_stopThreads = true;
+	std::thread serverThread(UpdateServer, std::ref(server)); // run it on a different thread
+
+	// input to stop server
+	char input;
+	do
 	{
-		server.update(-1, true);
-	}
+		std::cin >> input;
+	} while (input != 'q');
+
+
+	// stop server update
+	m_stopThreads = false;
+	serverThread.join(); // join the thread
+
 
 	return 0;
 }

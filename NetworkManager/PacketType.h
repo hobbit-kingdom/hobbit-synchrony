@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdint>
 
-#define OLC_PGEX_NETWORK
-#include "olcPGEX_Network.h"
+#define GAME_NETWORK_TYPES
+#include "GameNetwork.h"
 
 enum class PacketType : uint32_t
 {
@@ -16,6 +16,6 @@ enum class PacketType : uint32_t
 
 	Game_AddClient,
 	Game_RemoveClient,
-	Game_UpdateClient,
+	Game_Snapshot,
 	Game_EventClient,
 };

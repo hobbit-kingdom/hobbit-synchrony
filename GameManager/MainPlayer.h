@@ -37,7 +37,7 @@ public:
         uint32_t animBilbo = MemoryAccess::readData(bilboAnimPTR);
 
         // Set the packet
-        GamePacket gamePacket(0x1, 0x1);// first is reader, second is type
+        GamePacket gamePacket(0x0, 0x1, 0x1);// first read Type, second is reader, third is type 
 
         gamePacket.pushBackGamePacket(uintPosX);
         gamePacket.pushBackGamePacket(uintPosY);

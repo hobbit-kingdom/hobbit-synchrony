@@ -4,6 +4,7 @@
 
 class GamePacket
 {
+	uint32_t packetReadType = 0;
 	uint32_t packetType = 0;
 	std::vector<uint32_t> readersIndexes;
 	std::vector<uint32_t> gameData;
@@ -11,13 +12,9 @@ class GamePacket
 public:
 	static const uint32_t PACKET_FlAG = 0xffffffff;
 
-	GamePacket(std::vector<uint32_t> recieverIndex, std::vector<uint32_t> packet, uint32_t newPacketType)
-	{
-		readersIndexes = recieverIndex;
-		gameData = packet;
-		packetType = newPacketType;
-	}
-	GamePacket(uint32_t recieverIndex, std::vector<uint32_t> packet)
+	GamePacket(uint32_t newRecieverType, std::vector<uint32_t> recieverIndex, std::vector<uint32_t> packet, uint32_t newPacketType) 
+		: packetReadType(newRecieverType), readersIndexes(recieverIndex), gameData(packet), packetType(newPacketType){}
+	GamePacket(uint32_t newRecieverType, uint32_t recieverIndex, std::vector<uint32_t> packet) : packetReadType(newRecieverType)
 	{
 		readersIndexes.push_back(recieverIndex);
 
@@ -32,10 +29,9 @@ public:
 		// store Game Data
 		gameData.insert(gameData.end(), packet.begin(), packet.begin() + packetSize);
 	}
-	GamePacket(uint32_t recieverIndex, uint32_t newPacketType)
+	GamePacket(uint32_t newRecieverType, uint32_t recieverIndex, uint32_t newPacketType) : packetReadType(newRecieverType), packetType(newPacketType)
 	{
 		readersIndexes.push_back(recieverIndex);
-		packetType = newPacketType;
 	}
 
 	GamePacket(){}
@@ -100,10 +96,12 @@ public:
 	{
 		std::vector<uint32_t> finalPacket;
 
+		finalPacket.push_back(packetReadType);
 		if (readersIndexes.size() == 0)
 		{
 			return finalPacket;
 		}
+
 
 		// set recievers indexes
 		if (readersIndexes.size() > 1)
@@ -166,6 +164,7 @@ public:
 				continue;
 			}
 
+
 			// multiple readers from packet
 			if (previousFlag == PACKET_FlAG && currentFlag != PACKET_FlAG)
 			{
@@ -183,7 +182,7 @@ public:
 
 
 				// store the GamePacket
-				gamePackets.push_back(GamePacket(readers, packets, packetType));
+				gamePackets.push_back(GamePacket(PACKET_FlAG, readers, packets, packetType));
 
 				// the type and size of packet
 				packets.erase(packets.begin());
@@ -206,7 +205,7 @@ public:
 			uint32_t reader = packets.front();
 			packets.erase(packets.begin());
 			// store the GamePacket
-			gamePackets.push_back(GamePacket(reader, packets));
+			gamePackets.push_back(GamePacket(PACKET_FlAG, reader, packets));
 			// the type 
 			packets.erase(packets.begin());
 			// packet size

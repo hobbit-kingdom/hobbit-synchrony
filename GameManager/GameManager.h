@@ -153,6 +153,7 @@ public:
       
 
         std::vector<uint32_t> packets;      // packets to send
+        std::vector<uint32_t> packetsEvents;      // packets to send
         std::vector<uint32_t> entityPackets;// entity packets
         std::vector<GamePacket> gamePackets;// packeof the game
         std::vector<uint32_t> processedGamePacket;
@@ -177,12 +178,20 @@ public:
         for (GamePacket gamePacket : gamePackets)
         {
             processedGamePacket = gamePacket.getPacket();
-            packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
+            if (processedGamePacket.front() == 0x0)
+            {
+                packets.insert(packets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
+            }
+            else
+            {
+                packetsEvents.insert(packetsEvents.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
+            }
         }
 
         //indicate the end of packet
         processedGamePacket = GamePacket::lastPacket();
         packets.insert(packets.end(), processedGamePacket.begin(), processedGamePacket.end());
+        packetsEvents.insert(packetsEvents.end(), processedGamePacket.begin(), processedGamePacket.end());
 
         return packets;
     }
