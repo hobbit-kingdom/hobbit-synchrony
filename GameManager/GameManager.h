@@ -170,7 +170,7 @@ public:
         for (ClientEntity* e : clientEntities)
         {
             gamePackets.push_back(e->writePacket());
-            e->FinishedWritePacket();
+            e->finishedWritePacket();
         }
 
         // get packet from game packet
