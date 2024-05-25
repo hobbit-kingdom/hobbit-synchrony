@@ -1,6 +1,6 @@
 #include "MemoryAccess.h"
 
-HANDLE MemoryAccess::Process;
+HANDLE MemoryAccess::process;
 std::mutex MemoryAccess::guardWriteData;
 std::mutex MemoryAccess::guardProcess;
 //@return name of attached executable
@@ -111,7 +111,7 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 	std::vector<void*> returnVec;
 	returnVec.reserve(1000);
 
-	auto query = initVirtualQuery(Process);
+	auto query = initVirtualQuery(process);
 
 	if (!query.oppened())
 		return {};
@@ -129,7 +129,7 @@ std::vector<void*> MemoryAccess::findBytePatternInProcessMemory(void* pattern, s
 			char* localCopyContents = new char[size];
 
 			SIZE_T readSize = 0;
-			if(ReadProcessMemory(Process, low, localCopyContents, size, &readSize))
+			if(ReadProcessMemory(process, low, localCopyContents, size, &readSize))
 			{
 				char* cur = localCopyContents;
 				size_t curPos = 0;

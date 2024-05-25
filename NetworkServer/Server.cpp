@@ -120,10 +120,10 @@ int main()
 {
 	std::cout << "Server is Running" << std::endl;
 	Server server(60000);
-	server.Start();
+	server.start();
 	while (1)
 	{
-		server.Update(-1, true);
+		server.update(-1, true);
 	}
 
 	return 0;

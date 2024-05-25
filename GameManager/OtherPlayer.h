@@ -16,7 +16,7 @@ private:
 public:
 	
 	// packages
-	void ReadPacket(GamePacket gamePaket, uint32_t playerIndex) override
+	void readPacket(GamePacket gamePaket, uint32_t playerIndex) override
 	{
 		// Check type
 		if (gamePaket.getPacketType() != 0x1)
@@ -65,7 +65,7 @@ public:
 		std::cout << "A: " << animBilbo << std::endl << std::endl;
 		std::cout << "\033[0m";
 	}
-	GamePacket WritePacket() const override
+	GamePacket writePacket() const override
 	{
 		if (!processPackets)
 			return GamePacket();
@@ -75,21 +75,21 @@ public:
 	}
 
 	// game events
-	void Update() override
+	void update() override
 	{
 		// updates every frame
 	}
-	void EnterNewLevel() override
+	void enterNewLevel() override
 	{
-		ReadPtrs();
+		readPtrs();
 		processPackets = true;
 	}
-	void ExitLevel() override
+	void exitLevel() override
 	{
 		processPackets = false;
 	}
 
-	void ReadPtrs() override 
+	void readPtrs() override 
 	{
 		otherPlayers.clear();
 		for (uint32_t i = 0; i < GUIDs.size(); i++)

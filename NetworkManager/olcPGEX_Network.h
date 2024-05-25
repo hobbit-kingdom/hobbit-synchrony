@@ -814,7 +814,7 @@ namespace olc
 			}
 
 			// Starts the server!
-			bool Start()
+			bool start()
 			{
 				try
 				{
@@ -966,7 +966,7 @@ namespace olc
 			}
 
 			// Force server to respond to incoming messages
-			void Update(size_t nMaxMessages = -1, bool bWait = false)
+			void update(size_t nMaxMessages = -1, bool bWait = false)
 			{
 				if (bWait) m_qMessagesIn.wait();
 

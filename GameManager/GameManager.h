@@ -22,63 +22,63 @@ private:
     static bool levelLoaded;
     static uint32_t currentLevel;
 
-    static void ReadGameState()
+    static void readGameState()
     {
         gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state address
     }
-    static void ReadGameLevel()
+    static void readGameLevel()
     {
         currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level address
     }
-    static void ReadLevelLoaded()
+    static void readLevelLoaded()
     {
         levelLoaded = !MemoryAccess::readData(0x0072C7D4);  //0x0072C7D4: is loaded level address
     }
 
 
-    static uint32_t GetGameState()
+    static uint32_t getGameState()
     {
         return gameState;
     }
-    static bool GetLevelLoaded()
+    static bool getLevelLoaded()
     {
         return levelLoaded;
     }
-    static uint32_t GetGameLevel()
+    static uint32_t getGameLevel()
     {
         return currentLevel;
     }
 
 
-    static bool CheckGameOpen()
+    static bool checkGameOpen()
     {
         MemoryAccess::setExecutableName("Meridian.exe");
         return MemoryAccess::readProcess();
     }
-    static void ReadInstanices()
+    static void readInstanices()
     {
-        ReadGameState();
-        ReadLevelLoaded();
-        ReadGameLevel();
+        readGameState();
+        readLevelLoaded();
+        readGameLevel();
     }
 
     static std::mutex guardUpdate;
     static std::mutex guardReadPacket;
     static std::mutex guardWritePacket;
 public:
-    static void Start()
+    static void start()
     {
         //when started the server
     }
-    static void Update()
+    static void update()
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
 
-        if (!CheckGameOpen())
+        if (!checkGameOpen())
             return;
         MemoryAccess::udpateProcess();
 
-        ReadInstanices();
+        readInstanices();
 
       /*  uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
         std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;*/
@@ -89,12 +89,12 @@ public:
             // game state
             static uint32_t previousState;
             static uint32_t currentState;
-            currentState = GetGameState();
+            currentState = getGameState();
 
             // level loaded
             static bool previousLevelLoaded;
             static bool currentLevelLoaded;
-            currentLevelLoaded = GetLevelLoaded();
+            currentLevelLoaded = getLevelLoaded();
 
             // new level
             if (previousLevelLoaded != currentLevelLoaded && currentLevelLoaded)
@@ -102,7 +102,7 @@ public:
                 // call enterNewLevel for all classes
                 for (ClientEntity* e : clientEntities)
                 {
-                    e->EnterNewLevel();
+                    e->enterNewLevel();
                 }
             }
 
@@ -112,7 +112,7 @@ public:
                 // call enterNewLevel for all classes
                 for (ClientEntity* e : clientEntities)
                 {
-                    e->ExitLevel();
+                    e->exitLevel();
                 }
             }
             previousState = currentState;
@@ -123,15 +123,15 @@ public:
         {
             for (ClientEntity* e : clientEntities)
             {
-                e->Update();
+                e->update();
             }
         }
     }
     
-    static void ReadPacket(std::vector<uint32_t>& packets, uint32_t playerIndex) 
+    static void readPacket(std::vector<uint32_t>& packets, uint32_t playerIndex) 
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
-        if (!CheckGameOpen())
+        if (!checkGameOpen())
             return;
 
         // convert packets into GamePackets
@@ -143,11 +143,11 @@ public:
         {
             for (uint32_t reader : gamePacket.getReadersIndexes())
             {
-                clientEntities[reader]->ReadPacket(gamePacket, playerIndex);
+                clientEntities[reader]->readPacket(gamePacket, playerIndex);
             }
         }
     }
-    static std::vector<uint32_t> WritePacket()
+    static std::vector<uint32_t> writePacket()
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
       
@@ -157,7 +157,7 @@ public:
         std::vector<GamePacket> gamePackets;// packeof the game
         std::vector<uint32_t> processedGamePacket;
 
-        if (!CheckGameOpen())
+        if (!checkGameOpen())
         {
             //indicate the end of packet
             processedGamePacket = GamePacket::lastPacket();
@@ -169,7 +169,7 @@ public:
         // get game packet from all entities
         for (ClientEntity* e : clientEntities)
         {
-            gamePackets.push_back(e->WritePacket());
+            gamePackets.push_back(e->writePacket());
             e->FinishedWritePacket();
         }
 

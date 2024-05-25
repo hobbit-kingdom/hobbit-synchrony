@@ -47,14 +47,14 @@ public:
 	static void udpateProcess()
 	{
 		std::lock_guard<std::mutex> guard(guardProcess);
-		if(Process)
-			CloseHandle(Process);
-		Process = readProcess();
+		if(process)
+			CloseHandle(process);
+		process = readProcess();
 	}
 	static bool checkProcess()
 	{
 		std::lock_guard<std::mutex> guard(guardProcess);
-		if (!Process) {
+		if (!process) {
 			std::cout << "NO PROCESS ASSIGNED" << std::endl;
 			return 0;
 		}
@@ -72,7 +72,7 @@ public:
 	{
 		if (!checkProcess()) return 0;
 		uint32_t data = 0;
-		if (!ReadProcessMemory(Process, Address, &data, sizeof(data), NULL)) { // Reading the data from memory
+		if (!ReadProcessMemory(process, Address, &data, sizeof(data), NULL)) { // Reading the data from memory
 
 			data = 0;
 		}
@@ -96,10 +96,10 @@ public:
 			LPVOID objectPtrPtr = LPVOID(beginStackAddress + offset);
 
 			//read the pointer of an object
-			if (ReadProcessMemory(Process, objectPtrPtr, &objectAddress, sizeof(objectAddress), NULL)) {
+			if (ReadProcessMemory(process, objectPtrPtr, &objectAddress, sizeof(objectAddress), NULL)) {
 				LPVOID guidAddress = LPVOID(objectAddress + 0x8);
 				//read the guid
-				if (ReadProcessMemory(Process, guidAddress, &objectGUID, sizeof(objectGUID), NULL) && objectGUID == guid) {
+				if (ReadProcessMemory(process, guidAddress, &objectGUID, sizeof(objectGUID), NULL) && objectGUID == guid) {
 					return objectAddress;
 				}
 			}
@@ -116,15 +116,15 @@ public:
 		std::lock_guard<std::mutex> guard(guardWriteData);
 		if (!checkProcess()) return 0;
 		T temporary = data;
-		if (!ReadProcessMemory(Process, Address, &temporary, sizeof(temporary), NULL)) { // Reading the value from memory
+		if (!ReadProcessMemory(process, Address, &temporary, sizeof(temporary), NULL)) { // Reading the value from memory
 			return T(); // Return default value of type T if reading fails
 		}
 		DWORD oldProtect;
 
 		SIZE_T dwSize = sizeof(data);
-		VirtualProtectEx(Process, Address, dwSize, PAGE_EXECUTE_READWRITE, &oldProtect);
-		BOOL bWriteSuccess = WriteProcessMemory(Process, Address, &data, dwSize, NULL);
-		VirtualProtectEx(Process, Address, dwSize, oldProtect, &oldProtect);
+		VirtualProtectEx(process, Address, dwSize, PAGE_EXECUTE_READWRITE, &oldProtect);
+		BOOL bWriteSuccess = WriteProcessMemory(process, Address, &data, dwSize, NULL);
+		VirtualProtectEx(process, Address, dwSize, oldProtect, &oldProtect);
 		if (bWriteSuccess) return T(); // Return default value of type T if writing fails
 		return 0;
 	}
@@ -140,7 +140,7 @@ public:
 		return result;
 	}
 	// converts float to uint32_t
-	static uint32_t floatToUint32(float value) {
+	static uint32_t floatToUInt32(float value) {
 		uint32_t result;
 		std::memcpy(&result, &value, sizeof(result));
 		return result;
@@ -159,5 +159,5 @@ public:
 	static bool getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags);
 	static OppenedQuery initVirtualQuery(PROCESS process);
 private:
-	static HANDLE Process;
+	static HANDLE process;
 };

@@ -18,13 +18,13 @@ private:
 public:
 
     // packages
-    void ReadPacket(GamePacket gamePacket, uint32_t playerIndex) override
+    void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
     {
         if (!processPackets)
             return;
         // read packets
     }
-    GamePacket WritePacket() const override
+    GamePacket writePacket() const override
     {
         if (!processPackets)
             return GamePacket();
@@ -59,21 +59,21 @@ public:
     }
 
     // game events
-    void Update() override 
+    void update() override 
     {
         // calls each frame
     }
-    void EnterNewLevel() override 
+    void enterNewLevel() override 
     {
         processPackets = true;
-        ReadPtrs();
+        readPtrs();
     }
-    void ExitLevel() override
+    void exitLevel() override
     {
         processPackets = false;
     }
     // reads pointers data (usually when enter new level)
-    void ReadPtrs() override {
+    void readPtrs() override {
         bilboPosXPTR = MemoryAccess::readData(X_POSITION_PTR);
         bilboAnimPTR = 0x8 + MemoryAccess::readData(0x560 + MemoryAccess::readData(X_POSITION_PTR));
     }
