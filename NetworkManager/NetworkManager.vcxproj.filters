@@ -18,7 +18,22 @@
     <ClInclude Include="PacketType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameNetwork.h">
+    <ClInclude Include="packet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tsqueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="connection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="server_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client_interface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="net_common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

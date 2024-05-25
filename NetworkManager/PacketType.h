@@ -2,7 +2,7 @@
 #include <cstdint>
 
 #define GAME_NETWORK_TYPES
-#include "GameNetwork.h"
+
 
 enum class PacketType : uint32_t
 {

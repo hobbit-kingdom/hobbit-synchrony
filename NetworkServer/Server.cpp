@@ -2,7 +2,7 @@
 #include <unordered_map>
 #include <thread>
 #include <atomic>
-#include "../NetworkManager/PacketType.h"
+#include "../NetworkManager/server_interface.h"
 
 class Server : public net::server_interface<PacketType>
 {
@@ -129,7 +129,7 @@ void UpdateServer(Server& server)
 {
 	while (m_stopThreads)
 	{
-		server.update(-1, true);
+		server.Update(-1, true);
 	}
 }
 
@@ -139,7 +139,7 @@ int main()
 
 	// start server
 	Server server(60000);
-	server.start();
+	server.Start();
 
 	//updateserver
 	m_stopThreads = true;

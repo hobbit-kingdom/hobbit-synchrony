@@ -6,7 +6,7 @@
 #include <queue>
 
 // Project-specific headers
-#include "../NetworkManager/PacketType.h"  // Packet types for network communication
+#include "../NetworkManager/client_interface.h"  // Packet types for network communication
 #include "../GameManager/GameManager.h"    // Game management functionality
 #include "ClientConnection.h"              // Client connection handling
 

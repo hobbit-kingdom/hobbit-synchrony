@@ -1,2 +1,7 @@
-#include "GameNetwork.h"
+#include "client_interface.h"
+#include "connection.h"
+#include "net_common.h"
+#include "packet.h"
 #include "PacketType.h"
+#include "server_interface.h"
+#include "tsqueue.h"

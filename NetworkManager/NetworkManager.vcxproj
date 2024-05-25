@@ -132,8 +132,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="client_interface.h" />
+    <ClInclude Include="connection.h" />
+    <ClInclude Include="net_common.h" />
+    <ClInclude Include="packet.h" />
     <ClInclude Include="PacketType.h" />
-    <ClInclude Include="GameNetwork.h" />
+    <ClInclude Include="server_interface.h" />
+    <ClInclude Include="tsqueue.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameManager\GameManager.vcxproj">
