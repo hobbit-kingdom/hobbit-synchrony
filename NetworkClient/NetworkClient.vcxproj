@@ -132,6 +132,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ClientConnection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameManager\GameManager.vcxproj">
@@ -140,6 +142,10 @@
     <ProjectReference Include="..\NetworkManager\NetworkManager.vcxproj">
       <Project>{8cb81598-8725-4495-8dff-690c6c59f7a1}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Client.h" />
+    <ClInclude Include="ClientConnection.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
