@@ -24,10 +24,11 @@ public:
             return;
         // read packets
     }
-    GamePacket writePacket() const override
+    std::vector<GamePacket>  writePacket() const override
     {
         if (!processPackets)
-            return GamePacket();
+            return std::vector<GamePacket>();
+        std::vector<GamePacket> gamePackets;
 
         // Prepares packets to send
         uint32_t uintPosX = MemoryAccess::readData(0x7C4 + bilboPosXPTR);
@@ -54,8 +55,9 @@ public:
         std::cout << "R: " << MemoryAccess::uint32ToFloat(uintRotY) << " || ";
         std::cout << "A: " << animBilbo << std::endl << std::endl;
         std::cout << "\033[0m";
-
-        return gamePacket;
+        
+        gamePackets.push_back(gamePacket);
+        return gamePackets;
     }
 
     // game events

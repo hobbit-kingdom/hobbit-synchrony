@@ -16,13 +16,13 @@ private:
 public:
 	
 	// packages
-	void readPacket(GamePacket gamePaket, uint32_t playerIndex) override
+	void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
 	{
 		// Check type
-		if (gamePaket.getPacketType() != 0x1)
+		if (gamePacket.getPacketType() != 0x1)
 			return;
 		// Check size
-		if (gamePaket.getGameDataSize() == 0)
+		if (gamePacket.getGameDataSize() == 0)
 			return;
 		// Not processing packets state
 		if (!processPackets)
@@ -31,7 +31,7 @@ public:
 		// Get Players characters
 		NPC& otherPlayer = otherPlayers[playerIndex];
 
-		std::vector<uint32_t> gameData = gamePaket.getGameData();
+		std::vector<uint32_t> gameData = gamePacket.getGameData();
 		
 		// Read Packet Game Data
 		uint32_t uintPosX = gameData.front();
@@ -65,13 +65,13 @@ public:
 		std::cout << "A: " << animBilbo << std::endl << std::endl;
 		std::cout << "\033[0m";
 	}
-	GamePacket writePacket() const override
+	std::vector<GamePacket> writePacket() const override
 	{
 		if (!processPackets)
-			return GamePacket();
+			return std::vector<GamePacket>();
 
 		// sets packets to send
-		return GamePacket();
+		return std::vector<GamePacket>();
 	}
 
 	// game events

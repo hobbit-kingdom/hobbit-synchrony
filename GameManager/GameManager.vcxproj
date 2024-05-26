@@ -130,6 +130,7 @@
     <ClInclude Include="ClientEntity.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GamePacket.h" />
+    <ClInclude Include="LevelEntity.h" />
     <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="NPC.h" />
@@ -139,6 +140,7 @@
     <ClCompile Include="ClientEntity.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GamePacket.cpp" />
+    <ClCompile Include="LevelEntity.cpp" />
     <ClCompile Include="MainPlayer.cpp" />
     <ClCompile Include="MemoryAccess.cpp" />
     <ClCompile Include="NPC.cpp" />

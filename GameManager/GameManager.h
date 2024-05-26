@@ -5,6 +5,7 @@
 
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
+#include "LevelEntity.h"
 
 #include <vector>
 #include <mutex>
@@ -169,11 +170,15 @@ public:
 
         // get game packet from all entities
         GamePacket pkt;
+        std::vector<GamePacket> pkts;
         for (ClientEntity* e : clientEntities)
         {
-            pkt = e->writePacket();
-            if(pkt.getGameDataSize() != 0)
-                gamePackets.push_back(pkt);
+            pkts = e->writePacket();
+            for (GamePacket pkt : pkts)
+            {
+                if (pkt.getGameDataSize() != 0)
+                    gamePackets.push_back(pkt);
+            }
             e->finishedWritePacket();
         }
 

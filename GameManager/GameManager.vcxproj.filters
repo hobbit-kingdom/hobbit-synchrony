@@ -16,12 +16,6 @@
     <Filter Include="ClientEntity">
       <UniqueIdentifier>{4d72f520-6ce3-4d88-aa96-c1d291d46e30}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ClientEntity\headers">
-      <UniqueIdentifier>{a091dcf1-d888-4d8b-99b3-0bd00fec6fe1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ClientEntity\sources">
-      <UniqueIdentifier>{cb96641d-ec0d-4bce-bc1e-1b017d6b6ff0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NPC.h">
@@ -37,13 +31,16 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClientEntity.h">
-      <Filter>ClientEntity\headers</Filter>
+      <Filter>ClientEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelEntity.h">
+      <Filter>ClientEntity</Filter>
     </ClInclude>
     <ClInclude Include="MainPlayer.h">
-      <Filter>ClientEntity\headers</Filter>
+      <Filter>ClientEntity</Filter>
     </ClInclude>
     <ClInclude Include="OtherPlayer.h">
-      <Filter>ClientEntity\headers</Filter>
+      <Filter>ClientEntity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -56,17 +53,20 @@
     <ClCompile Include="GameManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClientEntity.cpp">
-      <Filter>ClientEntity\sources</Filter>
-    </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
-      <Filter>ClientEntity\sources</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
-      <Filter>ClientEntity\sources</Filter>
-    </ClCompile>
     <ClCompile Include="GamePacket.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientEntity.cpp">
+      <Filter>ClientEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelEntity.cpp">
+      <Filter>ClientEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="MainPlayer.cpp">
+      <Filter>ClientEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayer.cpp">
+      <Filter>ClientEntity</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

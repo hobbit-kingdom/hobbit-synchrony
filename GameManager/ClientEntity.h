@@ -12,7 +12,7 @@ protected:
 public:
     // packages
     virtual void readPacket(GamePacket gamePacket, uint32_t playerIndex) = 0;
-    virtual GamePacket writePacket() const = 0;
+    virtual std::vector<GamePacket> writePacket() const = 0;
     virtual void finishedWritePacket() {}
 
     // game events
