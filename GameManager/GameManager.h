@@ -181,12 +181,12 @@ public:
         for (GamePacket gamePacket : gamePackets)
         {
             processedGamePacket = gamePacket.getPacket();
-            // snapshot packet
-            if (processedGamePacket.front() == 0x0)
+
+            if (processedGamePacket.front() == (uint32_t)ReadType::Game_Snapshot)
             {
                 snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
             }
-            else //event packet
+            else if (processedGamePacket.front() == (uint32_t)ReadType::Game_EventClient)
             {
                 eventPackets.insert(eventPackets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
             }

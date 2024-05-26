@@ -1,9 +1,15 @@
 #pragma once
 #include <vector>
 
+enum class ReadType : uint32_t
+{
+	Game_Snapshot,
+	Game_EventClient,
+	Game_Temporary
+};
 class GamePacket
 {
-	uint32_t packetReadType = 0;
+	ReadType packetReadType;
 	uint32_t packetType = 0;
 	std::vector<uint32_t> readersIndexes;
 	std::vector<uint32_t> gameData;
@@ -11,9 +17,9 @@ class GamePacket
 public:
 	static const uint32_t PACKET_FlAG = 0xffffffff;
 
-	GamePacket(uint32_t newRecieverType, std::vector<uint32_t> recieverIndex, std::vector<uint32_t> packet, uint32_t newPacketType) 
+	GamePacket(ReadType newRecieverType, std::vector<uint32_t> recieverIndex, std::vector<uint32_t> packet, uint32_t newPacketType)
 		: packetReadType(newRecieverType), readersIndexes(recieverIndex), gameData(packet), packetType(newPacketType){}
-	GamePacket(uint32_t newRecieverType, uint32_t recieverIndex, std::vector<uint32_t> packet) : packetReadType(newRecieverType)
+	GamePacket(ReadType newRecieverType, uint32_t recieverIndex, std::vector<uint32_t> packet) : packetReadType(newRecieverType)
 	{
 		readersIndexes.push_back(recieverIndex);
 
@@ -28,7 +34,7 @@ public:
 		// store Game Data
 		gameData.insert(gameData.end(), packet.begin(), packet.begin() + packetSize);
 	}
-	GamePacket(uint32_t newRecieverType, uint32_t recieverIndex, uint32_t newPacketType) : packetReadType(newRecieverType), packetType(newPacketType)
+	GamePacket(ReadType newRecieverType, uint32_t recieverIndex, uint32_t newPacketType) : packetReadType(newRecieverType), packetType(newPacketType)
 	{
 		readersIndexes.push_back(recieverIndex);
 	}
@@ -104,7 +110,7 @@ public:
 			return std::vector<uint32_t>();
 		}
 
-		finalPacket.push_back(packetReadType);
+		finalPacket.push_back(uint32_t(packetReadType));
 		
 		
 		// set recievers indexes
@@ -186,7 +192,7 @@ public:
 
 
 				// store the GamePacket
-				gamePackets.push_back(GamePacket(PACKET_FlAG, readers, packets, packetType));
+				gamePackets.push_back(GamePacket(ReadType::Game_Temporary, readers, packets, packetType));
 
 				// the type and size of packet
 				packets.erase(packets.begin());
@@ -209,7 +215,7 @@ public:
 			uint32_t reader = packets.front();
 			packets.erase(packets.begin());
 			// store the GamePacket
-			gamePackets.push_back(GamePacket(PACKET_FlAG, reader, packets));
+			gamePackets.push_back(GamePacket(ReadType::Game_Temporary, reader, packets));
 			// the type 
 			packets.erase(packets.begin());
 			// packet size
