@@ -67,6 +67,12 @@ private:
     static std::mutex guardReadPacket;
     static std::mutex guardWritePacket;
 public:
+    GameManager()
+    {
+        GameManager::clientEntities.push_back(new MainPlayer());
+        GameManager::clientEntities.push_back(new OtherPlayer());
+        GameManager::clientEntities.push_back(new LevelEntity());
+    }
     static void start()
     {
         //when started the server

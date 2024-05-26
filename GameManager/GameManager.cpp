@@ -1,7 +1,6 @@
 #include "GameManager.h"
 // stores all classes
-std::vector<ClientEntity*> GameManager::clientEntities{ new MainPlayer(), new OtherPlayer(), new LevelEntity()};
-
+std::vector<ClientEntity*> GameManager::clientEntities;
 // state of the game
 uint32_t GameManager::gameState;
 bool GameManager::levelLoaded;

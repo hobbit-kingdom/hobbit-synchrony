@@ -3,6 +3,7 @@
 
 Client::Client()
 {
+    GameManager gameManager;
     // Call the onUserCreate method. If it returns false, exit the constructor.
     if (!onUserCreate())
     {

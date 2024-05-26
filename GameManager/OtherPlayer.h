@@ -7,14 +7,41 @@
 
 #include <vector>
 #include <cstdint>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <iomanip>
 
 class OtherPlayer : public ClientEntity
 {
+
 private:
-	static const std::vector<uint32_t> GUIDs;
+	static std::vector<uint32_t> GUIDs;
 	static std::vector<NPC> otherPlayers;
+
+	uint32_t hexStringToUint32(const std::string& hexString) {
+		uint32_t result;
+		std::stringstream ss;
+		ss << std::hex << hexString;
+		ss >> result;
+		return result;
+	}
+
 public:
-	
+	OtherPlayer() : ClientEntity()
+	{
+		std::ifstream file("GUID_SETUP.txt");
+		std::string line;
+		while (std::getline(file, line)) {
+			size_t pos = line.find('_');
+			if (pos != std::string::npos && pos + 1 < line.size()) {
+				std::string secondPart = line.substr(pos + 1);
+				GUIDs.push_back(hexStringToUint32(secondPart));
+			}
+			std::cout << "FOUND FILE!" << std::endl;
+		}
+	}
 	// packages
 	void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
 	{
