@@ -51,11 +51,6 @@ private:
     }
 
 
-    static bool checkGameOpen()
-    {
-        MemoryAccess::setExecutableName("Meridian.exe");
-        return MemoryAccess::readProcess();
-    }
     static void readInstanices()
     {
         readGameState();
@@ -67,6 +62,8 @@ private:
     static std::mutex guardReadPacket;
     static std::mutex guardWritePacket;
 public:
+    
+
     GameManager()
     {
         GameManager::clientEntities.push_back(new MainPlayer());
@@ -75,10 +72,18 @@ public:
     }
     static void start()
     {
+        while(!checkGameOpen())
+        {
+            std::cout << "Open the Game" << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+        HobbitMemoryAccess::updateObjectStackAddress();
         //when started the server
     }
     static void update()
     {
+        
+
         std::lock_guard<std::mutex> guard(guardUpdate);
 
         if (!checkGameOpen())
@@ -86,11 +91,7 @@ public:
         MemoryAccess::udpateProcess();
 
         readInstanices();
-
-      /*  uint32_t OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
-        std::cout << "The interactive thing Address:" << MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, 0x41F77800) << std::endl;*/
-
-
+        
         // handle game states
         {
             // game state
@@ -209,6 +210,12 @@ public:
             snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
         if (!eventPackets.empty())
             eventPackets.insert(eventPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
+    }
+
+    static bool checkGameOpen()
+    {
+        MemoryAccess::setExecutableName("Meridian.exe");
+        return MemoryAccess::readProcess();
     }
 };
 

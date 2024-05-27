@@ -42,6 +42,9 @@
     <ClInclude Include="OtherPlayer.h">
       <Filter>ClientEntity</Filter>
     </ClInclude>
+    <ClInclude Include="HobbitMemoryAccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NPC.cpp">
@@ -67,6 +70,9 @@
     </ClCompile>
     <ClCompile Include="OtherPlayer.cpp">
       <Filter>ClientEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="HobbitMemoryAccess.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

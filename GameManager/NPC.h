@@ -2,6 +2,7 @@
 #include <vector>
 #include <windows.h>
 #include "MemoryAccess.h"
+#include "HobbitMemoryAccess.h"
 
 class NPC
 {
@@ -20,7 +21,7 @@ private:
 	// Sets objects pointer of the NPC
 	void setObjectPtrByGUID(uint32_t guid)
 	{
-		objectAddress = MemoryAccess::findObjectAddressByGUID(OBJECT_STACK_ADDRESS, guid);
+		objectAddress = HobbitMemoryAccess::findObjectAddressByGUID(guid);
 
 		// Display new ObjAddress
 		std::cout << std::hex;

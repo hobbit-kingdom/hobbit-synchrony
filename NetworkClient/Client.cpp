@@ -10,6 +10,7 @@ Client::Client()
         return;
     }
 
+    GameManager::start();
     // Set stopThreads to false, indicating that the threads should not be stopped
     stopThreads = false;
 

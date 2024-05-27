@@ -60,6 +60,7 @@ public:
 		}
 		return 1;
 	}
+
 	static std::string getExecutableName();
 	static void setExecutableName(const std::string& newName);
 
@@ -84,30 +85,7 @@ public:
 	}
 
 
-	static uint32_t findObjectAddressByGUID(uint32_t beginStackAddress, uint32_t guid) {
-		if (!checkProcess()) return 0;
-
-		const size_t stackSize = 0xEFEC;
-		const size_t jumpSize = 0x14;
-		// Loop through the stack memory
-		for (size_t offset = stackSize; offset > 0; offset -= jumpSize) {
-			uint32_t objectAddress = 0;
-			uint32_t objectGUID = 0;
-			LPVOID objectPtrPtr = LPVOID(beginStackAddress + offset);
-
-			//read the pointer of an object
-			if (ReadProcessMemory(process, objectPtrPtr, &objectAddress, sizeof(objectAddress), NULL)) {
-				LPVOID guidAddress = LPVOID(objectAddress + 0x8);
-				//read the guid
-				if (ReadProcessMemory(process, guidAddress, &objectGUID, sizeof(objectGUID), NULL) && objectGUID == guid) {
-					return objectAddress;
-				}
-			}
-
-		}
-
-		return 0; // Return nullptr if dataToFind is not found in the stack range
-	}
+	
 
 	// templates
 	template<typename T>
@@ -158,6 +136,8 @@ public:
 	};
 	static bool getNextQuery(OppenedQuery& query, void*& low, void*& hi, int& flags);
 	static OppenedQuery initVirtualQuery(PROCESS process);
-private:
+
+protected:
+
 	static HANDLE process;
 };
