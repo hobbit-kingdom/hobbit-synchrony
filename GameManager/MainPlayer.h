@@ -77,6 +77,7 @@ public:
             uint32_t BBOXPredmetaX3 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0x8 + foundObject);
             uint32_t BBOXPredmetaY3 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0xC + foundObject);
             uint32_t BBOXPredmetaZ3 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0x10 + foundObject);
+            uint32_t XZCHTO = HobbitMemoryAccess::memoryAccess.readData(0x78 + foundObject);
             std::cout << "FOUND OBJECT: " << foundObject << std::endl;
             gamePacket1.pushBackGamePacket(activatedAddress);
             gamePacket1.pushBackGamePacket(PositionPredmetaX);
@@ -94,6 +95,7 @@ public:
             gamePacket1.pushBackGamePacket(BBOXPredmetaX3);
             gamePacket1.pushBackGamePacket(BBOXPredmetaY3);
             gamePacket1.pushBackGamePacket(BBOXPredmetaZ3);
+            gamePacket1.pushBackGamePacket(XZCHTO);
         }
         gamePackets.push_back(gamePacket1);
         return gamePackets;

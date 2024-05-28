@@ -64,6 +64,8 @@ public:
 		gameData.erase(gameData.begin());
 		uint32_t BBOXPredmetZ3 = gameData.front();
 		gameData.erase(gameData.begin());
+		uint32_t XZCHTO = gameData.front();
+		gameData.erase(gameData.begin());
 
 		uint32_t foundObject = HobbitMemoryAccess::findObjectAddressByGUID(PredmetGUID);
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + foundObject, PredmetX);
@@ -81,6 +83,7 @@ public:
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0xF0 + 0x8 + foundObject, BBOXPredmetX3);
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0xF0 + 0xC + foundObject, BBOXPredmetY3);
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0xF0 + 0x10 + foundObject, BBOXPredmetZ3);
+		HobbitMemoryAccess::memoryAccess.writeData(0x78 + foundObject, XZCHTO);
 		// Display the data
 		std::cout << "\033[33m";
 		std::cout << "Recieve the packet Send: " << std::endl;
