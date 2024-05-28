@@ -48,6 +48,8 @@ public:
 		// Display the data
 		std::cout << "\033[33m";
 		std::cout << "Recieve the packet Send: " << std::endl;
+
+		std::cout << "Predmet: " << foundObject << std::endl;
 		std::cout << "PredmetGuid: " << PredmetGUID << std::endl;
 		std::cout << "PredmetX: " << PredmetX << std::endl;
 		std::cout << "PredmetY: " << PredmetY << std::endl;

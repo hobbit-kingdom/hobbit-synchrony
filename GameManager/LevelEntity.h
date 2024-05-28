@@ -47,7 +47,6 @@ public:
 
         // Apply data from Packets
 
-        //set position, rotation, and animation
         //IF level greated then mine
         //  go to next level
         //  update my current level

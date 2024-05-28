@@ -65,6 +65,7 @@ public:
             uint32_t PositionPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + foundObject);
             uint32_t PositionPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x4 + foundObject);
             uint32_t PositionPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x8 + foundObject);
+            std::cout << "FOUND OBJECT: " << foundObject << std::endl;
             gamePacket1.pushBackGamePacket(activatedAddress);
             gamePacket1.pushBackGamePacket(PositionPredmetaX);
             gamePacket1.pushBackGamePacket(PositionPredmetaY);

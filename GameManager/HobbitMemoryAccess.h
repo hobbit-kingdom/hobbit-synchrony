@@ -52,6 +52,10 @@ public:
 		}
 		return false;
 	}
+	static uint32_t getObjectStackAddress()
+	{
+		return OBJECT_STACK_ADDRESS;
+	}
 
 	static std::vector<uint32_t> findObjectsByData(void* data, size_t dataSize, uint32_t shift) {
 		std::vector<uint32_t> foundObjects;
