@@ -46,9 +46,9 @@ private:
 
 		// set the animation position X pointer
 		uint32_t animAdd1 = getObjectPtr();
-		uint32_t animAdd2 = MemoryAccess::readData(0x304 + animAdd1);
-		uint32_t animAdd3 = MemoryAccess::readData(0x50 + animAdd2);
-		uint32_t animAdd4 = MemoryAccess::readData(0x10C + animAdd3);
+		uint32_t animAdd2 = HobbitMemoryAccess::memoryAccess.readData(0x304 + animAdd1);
+		uint32_t animAdd3 = HobbitMemoryAccess::memoryAccess.readData(0x50 + animAdd2);
+		uint32_t animAdd4 = HobbitMemoryAccess::memoryAccess.readData(0x10C + animAdd3);
 		animationAddress = 0x8 + animAdd4;
 		positionXAddress.push_back(-0xC4 + animationAddress);
 
@@ -58,7 +58,7 @@ private:
 		{
 			//dispplay the poistion Data
 			std::cout << "~Position Data:" << std::endl;
-			std::cout << "~posX: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(posxAdd)) << std::endl;
+			std::cout << "~posX: " << HobbitMemoryAccess::memoryAccess.uint32ToFloat(HobbitMemoryAccess::memoryAccess.readData(posxAdd)) << std::endl;
 			std::cout << "~posXAddress: " << posxAdd << std::endl;
 		}
 		std::cout << std::dec;
@@ -76,7 +76,7 @@ private:
 		// Display the rotation Y pointer Data
 		std::cout << std::hex;
 		std::cout << "~Rotation Data:" << std::endl;
-		std::cout << "~rotY: " << MemoryAccess::uint32ToFloat(MemoryAccess::readData(rotationYAddress)) << std::endl;
+		std::cout << "~rotY: " << HobbitMemoryAccess::memoryAccess.uint32ToFloat(HobbitMemoryAccess::memoryAccess.readData(rotationYAddress)) << std::endl;
 		std::cout << "~rotYAddress: " << rotationYAddress << std::endl;
 		std::cout << std::endl;
 		std::cout << std::dec;
@@ -88,14 +88,14 @@ private:
 		uint32_t ObjectPtr = getObjectPtr();
 
 		// set animation pointer
-		uint32_t animAdd1 = MemoryAccess::readData(0x304 + ObjectPtr);
-		uint32_t animAdd2 = MemoryAccess::readData(0x50 + animAdd1);
-		uint32_t animAdd3 = MemoryAccess::readData(0x10C + animAdd2);
+		uint32_t animAdd1 = HobbitMemoryAccess::memoryAccess.readData(0x304 + ObjectPtr);
+		uint32_t animAdd2 = HobbitMemoryAccess::memoryAccess.readData(0x50 + animAdd1);
+		uint32_t animAdd3 = HobbitMemoryAccess::memoryAccess.readData(0x10C + animAdd2);
 		animationAddress = 0x8 + animAdd3;
 
 		// Display the animation pointer Data
 		std::cout << std::hex;
-		std::cout << "anim: " << MemoryAccess::readData(animationAddress) << std::endl;
+		std::cout << "anim: " << HobbitMemoryAccess::memoryAccess.readData(animationAddress) << std::endl;
 		std::cout << "animAddress: " << animationAddress << std::endl;
 		std::cout << std::endl;
 	}
@@ -106,7 +106,7 @@ public:
 	NPC(uint32_t GUID) :guid(GUID)
 	{
 		// set the Object Array Address
-		OBJECT_STACK_ADDRESS = MemoryAccess::readData(0x0076F648);
+		OBJECT_STACK_ADDRESS = HobbitMemoryAccess::memoryAccess.readData(0x0076F648);
 
 		// Constructor message
 		std::cout << "~CreateNPC" << std::endl;
@@ -130,7 +130,7 @@ public:
 	// modifies game file
 	void setGUID(uint32_t newGUID) 
 	{ 
-		MemoryAccess::writeData(objectAddress, newGUID);
+		HobbitMemoryAccess::memoryAccess.writeData(objectAddress, newGUID);
 	}
 
 	// writes new positionX 
@@ -139,7 +139,7 @@ public:
 	{
 		for (uint32_t posXadd : positionXAddress)
 		{
-			MemoryAccess::writeData(posXadd, newPosition);
+			HobbitMemoryAccess::memoryAccess.writeData(posXadd, newPosition);
 		}
 	}
 	// writes new positionY
@@ -148,7 +148,7 @@ public:
 	{
 		for (uint32_t posXadd : positionXAddress)
 		{
-			MemoryAccess::writeData(0x4 + posXadd, newPosition);
+			HobbitMemoryAccess::memoryAccess.writeData(0x4 + posXadd, newPosition);
 		}
 	}
 	// writes new positionZ 
@@ -157,7 +157,7 @@ public:
 	{
 		for (uint32_t posXadd : positionXAddress)
 		{
-			MemoryAccess::writeData(0x8 + posXadd, newPosition);
+			HobbitMemoryAccess::memoryAccess.writeData(0x8 + posXadd, newPosition);
 		}
 	}
 	// writes new Position 
@@ -173,13 +173,13 @@ public:
 	// modifies game filen
 	void setRotationY(uint32_t newRotation)
 	{
-		MemoryAccess::writeData(rotationYAddress, newRotation);
+		HobbitMemoryAccess::memoryAccess.writeData(rotationYAddress, newRotation);
 	}
 	// writes new GUID 
 	// modifies game file
 	void setAnimation(uint32_t newAnimation)
 	{
-		MemoryAccess::writeData(animationAddress, newAnimation);
+		HobbitMemoryAccess::memoryAccess.writeData(animationAddress, newAnimation);
 	}
 };
 

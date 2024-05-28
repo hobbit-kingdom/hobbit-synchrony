@@ -3,19 +3,16 @@
 
 Client::Client()
 {
-    GameManager gameManager;
     // Call the onUserCreate method. If it returns false, exit the constructor.
     if (!onUserCreate())
     {
         return;
     }
 
-    GameManager::start();
     // Set stopThreads to false, indicating that the threads should not be stopped
     stopThreads = false;
 
     // Start the various threads, passing them the appropriate member function pointers and the current object
-    updateThread = std::thread(&Client::updateGame, this);
     processThread = std::thread(&Client::processPacket, this);
     readThread = std::thread(&Client::readPacket, this);
     sendThread = std::thread(&Client::sendPacket, this);
@@ -29,7 +26,6 @@ Client::~Client()
     stopThreads = true;
 
     // Wait for all the threads to finish executing
-    updateThread.join();
     processThread.join();
     readThread.join();
     sendThread.join();
@@ -62,17 +58,6 @@ bool Client::onUserCreate()
 }
 
 
-void Client::updateGame()
-{
-    while (!stopThreads && IsConnected())
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(UPDATE_INTERVAL));
-        if (waitingForConnection)
-            continue;
-
-        GameManager::update();
-    }
-}
 void Client::processPacket()
 {
     // Continue processing packets as long as the client is connected and not stopping
@@ -116,7 +101,7 @@ void Client::sendPacket()
             // Send event packets if any
             if (!eventPackets.empty())
             {
-                sendSpecificPacket(eventPackets, PacketType::Game_EventClient);
+                //sendSpecificPacket(eventPackets, PacketType::Game_EventClient);
             }
         }
 

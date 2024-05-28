@@ -45,6 +45,9 @@
     <ClInclude Include="HobbitMemoryAccess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NPC.cpp">
@@ -74,5 +77,10 @@
     <ClCompile Include="HobbitMemoryAccess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="FAKE_BILBO_GUID.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

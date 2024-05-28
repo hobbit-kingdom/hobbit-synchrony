@@ -1,7 +1,7 @@
 #pragma once
 #include "MemoryAccess.h"
-#include "ClientEntity.h"
 #include "GamePacket.h"
+#include "ClientEntity.h"
 
 #include "NPC.h"
 
@@ -19,7 +19,7 @@ class OtherPlayer : public ClientEntity
 private:
 	static std::vector<uint32_t> GUIDs;
 	static std::vector<NPC> otherPlayers;
-
+	static std::atomic<bool> processPackets;
 	uint32_t hexStringToUint32(const std::string& hexString) {
 		uint32_t result;
 		std::stringstream ss;
@@ -31,7 +31,18 @@ private:
 public:
 	OtherPlayer() : ClientEntity()
 	{
-		std::ifstream file("GUID_SETUP.txt");
+		std::ifstream file;
+		std::string filePath = "FAKE_BILBO_GUID.txt";
+		while (!file.is_open()) {
+			file.open(filePath);
+			if (!file.is_open()) {
+				std::cout << "File not found. Enter the path to FAKE_BILBO_GUID.txt or 'q' to quit: ";
+				std::string input;
+				std::getline(std::cin, input);
+				if (input == "q") return; // Quit if user enters 'q'
+				filePath = input;
+			}
+		}
 		std::string line;
 		while (std::getline(file, line)) {
 			size_t pos = line.find('_');
@@ -39,9 +50,10 @@ public:
 				std::string secondPart = line.substr(pos + 1);
 				GUIDs.push_back(hexStringToUint32(secondPart));
 			}
-			std::cout << "FOUND FILE!" << std::endl;
 		}
+		std::cout << "FOUND FILE!" << std::endl;
 	}
+
 	// packages
 	void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
 	{

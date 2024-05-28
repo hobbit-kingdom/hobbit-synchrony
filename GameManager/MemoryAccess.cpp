@@ -1,20 +1,9 @@
 #include "MemoryAccess.h"
 
-HANDLE MemoryAccess::process;
 std::mutex MemoryAccess::guardWriteData;
 std::mutex MemoryAccess::guardProcess;
-//@return name of attached executable
-std::string MemoryAccess::getExecutableName() {
-	return executableName;
-}
 
-// set executable name
-void MemoryAccess::setExecutableName(const std::string& newName) {
-	executableName = newName;
-}
-
-//@return current process
-HANDLE MemoryAccess::readProcess(const char* processName)
+HANDLE MemoryAccess::setProcess(const char* processName)
 {
 	DWORD pid = 0;
 	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -45,56 +34,11 @@ HANDLE MemoryAccess::readProcess(const char* processName)
 	}
 
 	HANDLE processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+	process = processHandle;
 	return processHandle; // This may return NULL if OpenProcess fails
-}
-//@return current process
-HANDLE MemoryAccess::readProcess()
-{
-	if (executableName != "")
-		return MemoryAccess::readProcess(executableName.c_str());
-	return 0;
-}
-
-//@return processID by name of the process
-DWORD MemoryAccess::readProcessID(const char* name)
-{
-	HANDLE h;
-	PROCESSENTRY32 singleProcess;
-	h = CreateToolhelp32Snapshot(
-		TH32CS_SNAPPROCESS,
-		0);
-
-	singleProcess.dwSize = sizeof(PROCESSENTRY32);
-
-	DWORD pid = 0;
-	do
-	{
-		// Convert WCHAR* to const char*
-		char processName[MAX_PATH];
-		WideCharToMultiByte(CP_ACP, 0, singleProcess.szExeFile, -1, processName, MAX_PATH, NULL, NULL);
-
-		if (strcmp(processName, name) == 0)
-		{
-			pid = singleProcess.th32ProcessID;
-			break;
-		}
-
-	} while (Process32Next(h, &singleProcess));
-
-	CloseHandle(h);
-
-	return pid;
-}
-//@return processID of attached process
-DWORD MemoryAccess::readProcessID()
-{
-	if (executableName != "")
-		return MemoryAccess::readProcessID(executableName.c_str());
-	return 0;
 }
 
 //FindBytePatternInMemory
-
 OppenedQuery initVirtualQuery(HANDLE process)
 {
 	OppenedQuery q = {};

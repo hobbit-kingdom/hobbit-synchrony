@@ -12,22 +12,21 @@
 #include <thread>
 #include <atomic>
 
-
+HobbitMemoryAccess hobbitMemoryAccess;
 // Function to run in another thread
 void threadFunction(std::atomic<bool>& stopFlag) {
     
     
     while (!stopFlag.load()) {
-        MemoryAccess::udpateProcess();
         //00773BD0
-        //uint32_t activatedAddress = MemoryAccess::readData(0x0075EC20);
-        uint32_t activatedAddress = MemoryAccess::readData(0x00773BD0);
+        //uint32_t activatedAddress = HobbitMemoryAccess::memoryAccess.readData(0x0075EC20);
+        uint32_t activatedAddress = HobbitMemoryAccess::memoryAccess.readData(0x00773BD0);
         
         uint32_t foundObject = HobbitMemoryAccess::findObjectAddressByGUID(activatedAddress);
 
         std::cout << std::hex;
         std::cout << "The interactive thing Address1:" << foundObject << std::endl;
-        MemoryAccess::writeData(foundObject + 0x10, 0x02001122);
+        HobbitMemoryAccess::memoryAccess.writeData(foundObject + 0x10, 0x02001122);
         std::cout << std::dec;
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -39,19 +38,19 @@ void threadFunction(std::atomic<bool>& stopFlag) {
 int main()
 {
     GameManager gameManager;
-    MemoryAccess::setExecutableName("Meridian.exe");
-    MemoryAccess::udpateProcess();
-    GameManager::start();
-    //
+    HobbitMemoryAccess::setHobbitMemoryAccess();
 
-
+    // Adding the listener to the event
+    bool wasHobbitOpen = false;
+    bool isHobbitOpen = false;
     do
     {
-        if (!gameManager.checkGameOpen())
-            continue;
+        //check game open
+       
 
-        MemoryAccess::udpateProcess();
-        ///*
+
+
+        /*
         std::atomic<bool> stopFlag(false);
         std::thread t(threadFunction, std::ref(stopFlag));
 
@@ -67,7 +66,9 @@ int main()
 
         t.join();
         std::cout << "Main thread joined the worker thread.\n";
-        //*/
+        */
+
+
 
         std::string dataStr;
         uint32_t shift;
@@ -87,7 +88,7 @@ int main()
         for (uint32_t e : foundObject)
         {
             std::cout << "The interactive thing Address1:" << e << std::endl;
-           // MemoryAccess::writeData(e + 0x10, 0x02001122);
+           // HobbitMemoryAccess::memoryAccess.writeData(e + 0x10, 0x02001122);
 
         }
         std::cout << std::dec;

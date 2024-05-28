@@ -136,6 +136,7 @@
     <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="OtherPlayer.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClientEntity.cpp" />
@@ -147,6 +148,9 @@
     <ClCompile Include="MemoryAccess.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="OtherPlayer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="FAKE_BILBO_GUID.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

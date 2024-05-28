@@ -1,5 +1,5 @@
 #pragma once
-#include "MemoryAccess.h"
+#include "HobbitMemoryAccess.h"
 #include "GamePacket.h"
 #include "ClientEntity.h"
 
@@ -12,30 +12,100 @@
 //0x00760864: loading layers
 
 #include <iomanip>
+#include <functional>
+
 class GameManager
 {
 private:
+
+    using Listener = std::function<void()>;
+
+    static std::thread updateThread;
+    static std::atomic<bool> stopThread;
     // All derived classes
     static std::vector<ClientEntity*> clientEntities;
-    
 
+    // in game states
     static uint32_t gameState;
     static bool levelLoaded;
+    static bool levelFullyLoaded;
     static uint32_t currentLevel;
 
+    // events
+    static std::vector<Listener> listenersEnterNewLevel;
+    static std::vector<Listener> listenersExitLevel;
+    static std::vector<Listener> listenersOpenGame;
+    static std::vector<Listener> listenersCloseGame;
+
+    // guards for multithread
+    static std::mutex guardUpdate;
+    static std::mutex guardReadPacket;
+    static std::mutex guardWritePacket;
+
+    // event functions
+    static void eventEnterNewLevel() {
+
+        HobbitMemoryAccess::setHobbitMemoryAccess();
+
+        for (const auto& listener : listenersEnterNewLevel) 
+        {
+            listener();
+        }
+        for (ClientEntity* e : clientEntities)
+        {
+            e->enterNewLevel();
+        }
+    }
+    static void eventExitLevel() {
+
+        HobbitMemoryAccess::setHobbitMemoryAccess();
+
+        for (const auto& listener : listenersExitLevel) 
+        {
+            listener();
+        }
+        for (ClientEntity* e : clientEntities)
+        {
+            e->exitLevel();
+        }
+    }
+
+    static void eventOpenGame()
+    {
+        HobbitMemoryAccess::setHobbitMemoryAccess();
+        for (const auto& listener : listenersOpenGame)
+        {
+            listener();
+        }
+
+    }
+    static void eventCloseGame()
+    {
+        for (const auto& listener : listenersCloseGame)
+        {
+            listener();
+        }
+
+    }
+
+
+    // game states functions
     static void readGameState()
     {
-        gameState = MemoryAccess::readData(0x00762B58); // 0x00762B58: game state address
+        gameState = HobbitMemoryAccess::memoryAccess.readData(0x00762B58); // 0x00762B58: game state address
     }
     static void readGameLevel()
     {
-        currentLevel = MemoryAccess::readData(0x00762B5C);  // 00762B5C: current level address
+        currentLevel = HobbitMemoryAccess::memoryAccess.readData(0x00762B5C);  // 00762B5C: current level address
     }
     static void readLevelLoaded()
     {
-        levelLoaded = !MemoryAccess::readData(0x0072C7D4);  //0x0072C7D4: is loaded level address
+        levelLoaded = HobbitMemoryAccess::memoryAccess.readData(0x00760354);  //0x0072C7D4: is loaded level address
     }
-
+    static void readLevelFullyLoaded()
+    {
+        levelFullyLoaded = !HobbitMemoryAccess::memoryAccess.readData(0x0076035C);  //0x0072C7D4: is loaded level address
+    }
 
     static uint32_t getGameState()
     {
@@ -45,101 +115,134 @@ private:
     {
         return levelLoaded;
     }
+    static bool getLevelFullyLoaded()
+    {
+        return levelFullyLoaded;
+    }
     static uint32_t getGameLevel()
     {
         return currentLevel;
     }
 
-
     static void readInstanices()
     {
         readGameState();
         readLevelLoaded();
+        readLevelFullyLoaded();
         readGameLevel();
     }
 
-    static std::mutex guardUpdate;
-    static std::mutex guardReadPacket;
-    static std::mutex guardWritePacket;
+
+    static void start()
+    {
+        HobbitMemoryAccess::setHobbitMemoryAccess();
+    }
+    static void update()
+    {
+        bool wasHobbitOpen = false;
+        bool isHobbitOpen = false;
+
+        uint32_t previousState = -1;
+        uint32_t currentState = -1;
+
+        bool previousLevelLoaded = false;
+        bool currentLevelLoaded = false;
+
+        bool previousLevelFullyLoaded = false;
+        bool currentLevelFullyLoaded = false;
+        while (!stopThread)
+        {
+            // update speed
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::lock_guard<std::mutex> guard(guardUpdate);
+
+            // check if game open
+            isHobbitOpen = HobbitMemoryAccess::isGameOpen();
+            if (!isHobbitOpen)
+            {
+                if (isHobbitOpen != wasHobbitOpen)
+                    eventCloseGame();
+                std::cout << "Waiting for HobbitTM" << std::endl;
+                wasHobbitOpen = isHobbitOpen;
+                continue;
+            }
+            if (wasHobbitOpen)
+            {
+                eventOpenGame();
+                wasHobbitOpen = isHobbitOpen;
+            }
+
+            // read instances of game (current level, etc.)
+            readInstanices();
+
+            // handle game states
+            // game state
+            currentState = getGameState();
+
+            // level loaded
+            currentLevelLoaded = getLevelLoaded();
+            currentLevelFullyLoaded = getLevelFullyLoaded();
+
+            // new level
+            if (previousLevelFullyLoaded != currentLevelFullyLoaded && currentLevelFullyLoaded)
+            {
+                eventEnterNewLevel();
+            }
+            if (previousLevelLoaded != currentLevelLoaded && !currentLevelLoaded)
+            {
+                eventExitLevel();
+            }
+
+            previousState = currentState;
+            previousLevelLoaded = currentLevelLoaded;
+            previousLevelFullyLoaded = currentLevelFullyLoaded;
+
+
+            // handle update event
+            for (ClientEntity* e : clientEntities)
+            {
+                e->update();
+            }
+        }
+        if (stopThread)
+        {
+            std::cout << "OPPS" << std::endl;
+        }
+
+    }
 public:
     
+    void addListenerEnterNewLevel(const Listener& listener) {
+        listenersEnterNewLevel.push_back(listener);
+    }
+    void addListenerExitLevel(const Listener& listener) {
+        listenersExitLevel.push_back(listener);
+    }
+    void addListenerOpenGame(const Listener& listener) {
+        listenersOpenGame.push_back(listener);
+    }
+    void addListenerCloseGame(const Listener& listener) {
+        listenersCloseGame.push_back(listener);
+    }
 
     GameManager()
     {
         GameManager::clientEntities.push_back(new MainPlayer());
         GameManager::clientEntities.push_back(new OtherPlayer());
         GameManager::clientEntities.push_back(new LevelEntity());
+        start();
+        updateThread = std::thread(update);
     }
-    static void start()
+    ~GameManager()
     {
-        while(!checkGameOpen())
-        {
-            std::cout << "Open the Game" << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        }
-        HobbitMemoryAccess::updateObjectStackAddress();
-        //when started the server
-    }
-    static void update()
-    {
-        
-
-        std::lock_guard<std::mutex> guard(guardUpdate);
-
-        if (!checkGameOpen())
-            return;
-        MemoryAccess::udpateProcess();
-
-        readInstanices();
-        
-        // handle game states
-        {
-            // game state
-            static uint32_t previousState;
-            static uint32_t currentState;
-            currentState = getGameState();
-
-            // level loaded
-            static bool previousLevelLoaded;
-            static bool currentLevelLoaded;
-            currentLevelLoaded = getLevelLoaded();
-
-            // new level
-            if (previousLevelLoaded != currentLevelLoaded && currentLevelLoaded)
-            {
-                // call enterNewLevel for all classes
-                for (ClientEntity* e : clientEntities)
-                {
-                    e->enterNewLevel();
-                }
-            }
-
-            // exit level, 0xA: in a loaded level
-            if (previousState == 0xA && currentState != 0xA)
-            {
-                // call enterNewLevel for all classes
-                for (ClientEntity* e : clientEntities)
-                {
-                    e->exitLevel();
-                }
-            }
-            previousState = currentState;
-            previousLevelLoaded = currentLevelLoaded;
-        }
-
-        // handle Update event
-        {
-            for (ClientEntity* e : clientEntities)
-            {
-                e->update();
-            }
-        }
+        stopThread = true;
+        updateThread.join();
     }
     
     static void readPacket(std::vector<uint32_t>& packets, uint32_t playerIndex) 
     {
         std::lock_guard<std::mutex> guard(guardUpdate);
-        if (!checkGameOpen())
+        if (!HobbitMemoryAccess::isGameOpen())
             return;
 
         // convert packets into GamePackets
@@ -164,7 +267,7 @@ public:
         std::vector<GamePacket> gamePackets;// packeof the game
         std::vector<uint32_t> processedGamePacket;
 
-        if (!checkGameOpen())
+        if (!HobbitMemoryAccess::isGameOpen())
         {
             if (snapshotPackets.empty())
                 return;
@@ -210,12 +313,6 @@ public:
             snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
         if (!eventPackets.empty())
             eventPackets.insert(eventPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
-    }
-
-    static bool checkGameOpen()
-    {
-        MemoryAccess::setExecutableName("Meridian.exe");
-        return MemoryAccess::readProcess();
     }
 };
 

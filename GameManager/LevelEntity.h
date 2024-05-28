@@ -1,6 +1,7 @@
 #pragma once
-#include "MemoryAccess.h"
 #include "ClientEntity.h"
+#include "MemoryAccess.h"
+#include "HobbitMemoryAccess.h"
 #include "GamePacket.h"
 
 #include <vector>
@@ -62,7 +63,7 @@ public:
         {
             GamePacket gamePacket(ReadType::Game_EventClient, 0x2, 0x1);// first read Type, second is reader, third is type 
 
-            uint32_t currentLevel = MemoryAccess::readData(0x7C4);
+            uint32_t currentLevel = HobbitMemoryAccess::memoryAccess.readData(0x7C4);
             gamePacket.pushBackGamePacket(currentLevel);
 
             gamePackets.push_back(gamePacket);

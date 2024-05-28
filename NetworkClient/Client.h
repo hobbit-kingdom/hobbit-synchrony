@@ -14,10 +14,11 @@
 class Client : public net::client_interface<PacketType>
 {
 private:
+    GameManager gameManager = GameManager();
+
     uint32_t clientID = 0;  // Unique identifier for the client
 
     // Threads for various operations
-    std::thread updateThread;    // Thread for updating the game
     std::thread processThread;   // Thread for processing packets
     std::thread readThread;      // Thread for reading packets
     std::thread sendThread;      // Thread for sending packets
@@ -47,7 +48,6 @@ private:
 
 
     // Methods for various operations
-    void updateGame();       // Method to update the game state
     void processPacket();    // Method to process packets
     void readPacket();       // Method to read packets
     void sendPacket();       // Method to send packets
