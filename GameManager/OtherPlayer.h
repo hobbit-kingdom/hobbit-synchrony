@@ -83,8 +83,6 @@ public:
 		gameData.erase(gameData.begin());
 		uint32_t animBilbo = gameData.front();
 		gameData.erase(gameData.begin());
-
-
 		// Apply data from Packets
 		
 		//set position, rotation, and animation

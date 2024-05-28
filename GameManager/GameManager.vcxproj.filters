@@ -48,6 +48,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PodnitiiPredmet.h">
+      <Filter>ClientEntity</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NPC.cpp">
@@ -76,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="HobbitMemoryAccess.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PodnitiiPredmet.cpp">
+      <Filter>ClientEntity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

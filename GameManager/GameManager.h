@@ -6,7 +6,7 @@
 #include "MainPlayer.h"
 #include "OtherPlayer.h"
 #include "LevelEntity.h"
-
+#include "PodnitiiPredmet.h"
 #include <vector>
 #include <mutex>
 //0x00760864: loading layers
@@ -230,6 +230,7 @@ public:
         GameManager::clientEntities.push_back(new MainPlayer());
         GameManager::clientEntities.push_back(new OtherPlayer());
         GameManager::clientEntities.push_back(new LevelEntity());
+        GameManager::clientEntities.push_back(new PodnitiiPredmet());
         start();
         updateThread = std::thread(update);
     }

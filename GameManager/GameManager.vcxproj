@@ -136,6 +136,7 @@
     <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="OtherPlayer.h" />
+    <ClInclude Include="PodnitiiPredmet.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +149,7 @@
     <ClCompile Include="MemoryAccess.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="OtherPlayer.cpp" />
+    <ClCompile Include="PodnitiiPredmet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="FAKE_BILBO_GUID.txt" />

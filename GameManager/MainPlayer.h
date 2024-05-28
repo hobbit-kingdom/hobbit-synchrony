@@ -57,6 +57,20 @@ public:
         std::cout << "\033[0m";
         
         gamePackets.push_back(gamePacket);
+        GamePacket gamePacket1(ReadType::Game_Snapshot, 0x3, 0x1);
+        if (animBilbo == 84)
+        {
+            uint32_t activatedAddress = HobbitMemoryAccess::memoryAccess.readData(0x00773BD0);
+            uint32_t foundObject = HobbitMemoryAccess::findObjectAddressByGUID(activatedAddress);
+            uint32_t PositionPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + foundObject);
+            uint32_t PositionPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x4 + foundObject);
+            uint32_t PositionPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x8 + foundObject);
+            gamePacket1.pushBackGamePacket(activatedAddress);
+            gamePacket1.pushBackGamePacket(PositionPredmetaX);
+            gamePacket1.pushBackGamePacket(PositionPredmetaY);
+            gamePacket1.pushBackGamePacket(PositionPredmetaZ);
+        }
+        gamePackets.push_back(gamePacket1);
         return gamePackets;
     }
 
