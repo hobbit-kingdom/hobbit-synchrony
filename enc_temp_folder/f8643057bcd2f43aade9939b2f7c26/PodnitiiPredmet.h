@@ -40,11 +40,29 @@ public:
 		gameData.erase(gameData.begin());
 		uint32_t PredmetZ = gameData.front();
 		gameData.erase(gameData.begin());
+		uint32_t LBOXPredmetX = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t LBOXPredmetY = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t LBOXPredmetZ = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t LBOXPredmetX1 = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t LBOXPredmetY1 = gameData.front();
+		gameData.erase(gameData.begin());
+		uint32_t LBOXPredmetZ1 = gameData.front();
+		gameData.erase(gameData.begin());
 
 		uint32_t foundObject = HobbitMemoryAccess::findObjectAddressByGUID(PredmetGUID);
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + foundObject, PredmetX);
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x4 + foundObject, PredmetY);
 		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x8 + foundObject, PredmetZ);
+		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x30 + foundObject, LBOXPredmetX);
+		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x34 + foundObject, LBOXPredmetY);
+		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x38 + foundObject, LBOXPredmetZ);
+		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x3C + foundObject, LBOXPredmetX1);
+		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x40 + foundObject, LBOXPredmetY1);
+		HobbitMemoryAccess::memoryAccess.writeData(0xC + 0x8 + 0x44 + foundObject, LBOXPredmetZ1);
 		// Display the data
 		std::cout << "\033[33m";
 		std::cout << "Recieve the packet Send: " << std::endl;

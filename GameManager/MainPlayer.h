@@ -65,27 +65,35 @@ public:
             uint32_t PositionPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + foundObject);
             uint32_t PositionPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x4 + foundObject);
             uint32_t PositionPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x8 + foundObject);
-<<<<<<< HEAD
-            uint32_t LBOXPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x30 + foundObject);
-            uint32_t LBOXPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x34 + foundObject);
-            uint32_t LBOXPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x38 + foundObject);
-            uint32_t LBOXPredmetaX1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x3C + foundObject);
-            uint32_t LBOXPredmetaY1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x40 + foundObject);
-            uint32_t LBOXPredmetaZ1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x44 + foundObject);
-
-=======
+            uint32_t BBOXPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x30 + foundObject);
+            uint32_t BBOXPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x34 + foundObject);
+            uint32_t BBOXPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x38 + foundObject);
+            uint32_t BBOXPredmetaX1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x3C + foundObject);
+            uint32_t BBOXPredmetaY1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x40 + foundObject);
+            uint32_t BBOXPredmetaZ1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x44 + foundObject);
+            uint32_t BBOXPredmetaX2 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xEC + foundObject);
+            uint32_t BBOXPredmetaY2 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + foundObject);
+            uint32_t BBOXPredmetaZ2 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0x4 + foundObject);
+            uint32_t BBOXPredmetaX3 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0x8 + foundObject);
+            uint32_t BBOXPredmetaY3 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0xC + foundObject);
+            uint32_t BBOXPredmetaZ3 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0xF0 + 0x10 + foundObject);
             std::cout << "FOUND OBJECT: " << foundObject << std::endl;
->>>>>>> 6fcc14eccee4dd1684612ac899c0c9dca51b7281
             gamePacket1.pushBackGamePacket(activatedAddress);
             gamePacket1.pushBackGamePacket(PositionPredmetaX);
             gamePacket1.pushBackGamePacket(PositionPredmetaY);
             gamePacket1.pushBackGamePacket(PositionPredmetaZ);
-            gamePacket1.pushBackGamePacket(LBOXPredmetaX);
-            gamePacket1.pushBackGamePacket(LBOXPredmetaY);
-            gamePacket1.pushBackGamePacket(LBOXPredmetaZ);
-            gamePacket1.pushBackGamePacket(LBOXPredmetaX1);
-            gamePacket1.pushBackGamePacket(LBOXPredmetaY1);
-            gamePacket1.pushBackGamePacket(LBOXPredmetaZ1);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaX);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaY);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaZ);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaX1);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaY1);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaZ1);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaX2);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaY2);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaZ2);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaX3);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaY3);
+            gamePacket1.pushBackGamePacket(BBOXPredmetaZ3);
         }
         gamePackets.push_back(gamePacket1);
         return gamePackets;

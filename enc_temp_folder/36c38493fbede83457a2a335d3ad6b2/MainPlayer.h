@@ -65,10 +65,24 @@ public:
             uint32_t PositionPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + foundObject);
             uint32_t PositionPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x4 + foundObject);
             uint32_t PositionPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x8 + foundObject);
+            uint32_t LBOXPredmetaX = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x30 + foundObject);
+            uint32_t LBOXPredmetaY = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x34 + foundObject);
+            uint32_t LBOXPredmetaZ = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x38 + foundObject);
+            uint32_t LBOXPredmetaX1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x3C + foundObject);
+            uint32_t LBOXPredmetaY1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x40 + foundObject);
+            uint32_t LBOXPredmetaZ1 = HobbitMemoryAccess::memoryAccess.readData(0xC + 0x8 + 0x44 + foundObject);
+
+            std::cout << "FOUND OBJECT: " << foundObject << std::endl;
             gamePacket1.pushBackGamePacket(activatedAddress);
             gamePacket1.pushBackGamePacket(PositionPredmetaX);
             gamePacket1.pushBackGamePacket(PositionPredmetaY);
             gamePacket1.pushBackGamePacket(PositionPredmetaZ);
+            gamePacket1.pushBackGamePacket(LBOXPredmetaX);
+            gamePacket1.pushBackGamePacket(LBOXPredmetaY);
+            gamePacket1.pushBackGamePacket(LBOXPredmetaZ);
+            gamePacket1.pushBackGamePacket(LBOXPredmetaX1);
+            gamePacket1.pushBackGamePacket(LBOXPredmetaY1);
+            gamePacket1.pushBackGamePacket(LBOXPredmetaZ1);
         }
         gamePackets.push_back(gamePacket1);
         return gamePackets;
