@@ -50,7 +50,7 @@ int main()
 
 
 
-        /*
+        
         std::atomic<bool> stopFlag(false);
         std::thread t(threadFunction, std::ref(stopFlag));
 
@@ -66,10 +66,10 @@ int main()
 
         t.join();
         std::cout << "Main thread joined the worker thread.\n";
-        */
+        
 
 
-
+        /*
         std::string dataStr;
         uint32_t shift;
 
@@ -91,7 +91,7 @@ int main()
            // HobbitMemoryAccess::memoryAccess.writeData(e + 0x10, 0x02001122);
 
         }
-        std::cout << std::dec;
+        std::cout << std::dec*/
     } while (std::cin.get() != 'q');
     return 0;
 }

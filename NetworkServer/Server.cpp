@@ -16,6 +16,7 @@ public:
 	const uint32_t m_MAX_CLIENTS = 8;
 
 protected:
+
 	bool OnClientConnect(std::shared_ptr<net::connection<PacketType>> client) override
 	{
 		// check if to many users
@@ -123,6 +124,20 @@ protected:
 
 };
 
+unsigned short FindAvailablePort(unsigned short startPort, unsigned short endPort) {
+	asio::io_context ioContext;
+	for (unsigned short port = startPort; port <= endPort; ++port) {
+		asio::ip::tcp::acceptor acceptor(ioContext);
+		asio::error_code ec;
+		acceptor.open(asio::ip::tcp::v4(), ec);
+		acceptor.bind({ asio::ip::tcp::v4(), port }, ec);
+		if (!ec) {
+			acceptor.close();
+			return port;
+		}
+	}
+	throw std::runtime_error("No available port found");
+}
 
 std::atomic<bool> m_stopThreads = false;
 void UpdateServer(Server& server)
@@ -136,9 +151,9 @@ void UpdateServer(Server& server)
 int main()
 {
 	std::cout << "Server is Running" << std::endl;
-
+	unsigned short port = FindAvailablePort(60000, 60010);
 	// start server
-	Server server(60000);
+	Server server(port);
 	server.Start();
 
 	//updateserver
