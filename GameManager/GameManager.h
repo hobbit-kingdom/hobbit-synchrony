@@ -1,12 +1,7 @@
 #pragma once
 #include "HobbitMemoryAccess.h"
 #include "GamePacket.h"
-#include "ClientEntity.h"
 
-#include "MainPlayer.h"
-#include "OtherPlayer.h"
-#include "LevelEntity.h"
-#include "PodnitiiPredmet.h"
 #include <vector>
 #include <mutex>
 //0x00760864: loading layers
@@ -23,7 +18,6 @@ private:
     static std::thread updateThread;
     static std::atomic<bool> stopThread;
     // All derived classes
-    static std::vector<ClientEntity*> clientEntities;
 
     // in game states
     static uint32_t gameState;
@@ -51,10 +45,6 @@ private:
         {
             listener();
         }
-        for (ClientEntity* e : clientEntities)
-        {
-            e->enterNewLevel();
-        }
     }
     static void eventExitLevel() {
 
@@ -63,10 +53,6 @@ private:
         for (const auto& listener : listenersExitLevel) 
         {
             listener();
-        }
-        for (ClientEntity* e : clientEntities)
-        {
-            e->exitLevel();
         }
     }
 
@@ -196,13 +182,6 @@ private:
             previousState = currentState;
             previousLevelLoaded = currentLevelLoaded;
             previousLevelFullyLoaded = currentLevelFullyLoaded;
-
-
-            // handle update event
-            for (ClientEntity* e : clientEntities)
-            {
-                e->update();
-            }
         }
         if (stopThread)
         {
@@ -227,10 +206,6 @@ public:
 
     GameManager()
     {
-        GameManager::clientEntities.push_back(new MainPlayer());
-        GameManager::clientEntities.push_back(new OtherPlayer());
-        GameManager::clientEntities.push_back(new LevelEntity());
-        GameManager::clientEntities.push_back(new PodnitiiPredmet());
         start();
         updateThread = std::thread(update);
     }
@@ -255,7 +230,6 @@ public:
         {
             for (uint32_t reader : gamePacket.getReadersIndexes())
             {
-                clientEntities[reader]->readPacket(gamePacket, playerIndex);
             }
         }
     }
@@ -279,19 +253,6 @@ public:
             return;
         }
 
-        // get game packet from all entities
-        GamePacket pkt;
-        std::vector<GamePacket> pkts;
-        for (ClientEntity* e : clientEntities)
-        {
-            pkts = e->writePacket();
-            for (GamePacket pkt : pkts)
-            {
-                if (pkt.getGameDataSize() != 0)
-                    gamePackets.push_back(pkt);
-            }
-            e->finishedWritePacket();
-        }
 
         // get packet from game packet
         for (GamePacket gamePacket : gamePackets)

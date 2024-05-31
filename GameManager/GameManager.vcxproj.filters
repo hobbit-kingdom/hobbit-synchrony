@@ -13,14 +13,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ClientEntity">
-      <UniqueIdentifier>{4d72f520-6ce3-4d88-aa96-c1d291d46e30}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NPC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -30,32 +24,14 @@
     <ClInclude Include="GamePacket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ClientEntity.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelEntity.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="MainPlayer.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherPlayer.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
     <ClInclude Include="HobbitMemoryAccess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PodnitiiPredmet.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NPC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MemoryAccess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,23 +41,8 @@
     <ClCompile Include="GamePacket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ClientEntity.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
-    <ClCompile Include="LevelEntity.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
     <ClCompile Include="HobbitMemoryAccess.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PodnitiiPredmet.cpp">
-      <Filter>ClientEntity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

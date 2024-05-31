@@ -127,29 +127,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ClientEntity.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GamePacket.h" />
     <ClInclude Include="HobbitMemoryAccess.h" />
-    <ClInclude Include="LevelEntity.h" />
-    <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="MemoryAccess.h" />
-    <ClInclude Include="NPC.h" />
-    <ClInclude Include="OtherPlayer.h" />
-    <ClInclude Include="PodnitiiPredmet.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ClientEntity.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GamePacket.cpp" />
     <ClCompile Include="HobbitMemoryAccess.cpp" />
-    <ClCompile Include="LevelEntity.cpp" />
-    <ClCompile Include="MainPlayer.cpp" />
     <ClCompile Include="MemoryAccess.cpp" />
-    <ClCompile Include="NPC.cpp" />
-    <ClCompile Include="OtherPlayer.cpp" />
-    <ClCompile Include="PodnitiiPredmet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="FAKE_BILBO_GUID.txt" />

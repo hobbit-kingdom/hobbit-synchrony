@@ -5,7 +5,6 @@ using Listener = std::function<void()>;
 std::thread GameManager::updateThread;
 std::atomic<bool> GameManager::stopThread = false;
 // All derived classes
-std::vector<ClientEntity*> GameManager::clientEntities;
 
 // in game states
 uint32_t GameManager::gameState;

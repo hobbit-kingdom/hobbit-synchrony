@@ -24,6 +24,7 @@
     <ProjectGuid>{32278462-9cba-4ac4-aed6-5459d9b36c7f}</ProjectGuid>
     <RootNamespace>HobbitAnalyzer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>PickupALL</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
