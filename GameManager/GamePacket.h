@@ -151,6 +151,8 @@ public:
 	static std::vector<GamePacket> packetsToGamePackets(std::vector<uint32_t>& packets)
 	{
 		std::vector<GamePacket> gamePackets;
+		if (packets.empty())
+			return gamePackets;
 
 		// flags that are used for 
 		uint32_t currentFlag = 0;

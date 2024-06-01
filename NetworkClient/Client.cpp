@@ -69,7 +69,6 @@ void Client::processPacket()
         // If the client is waiting for connection, skip this iteration
         if (waitingForConnection)
             continue;
-
         // Get all packets
         std::vector<std::vector<uint32_t>> allPackets = getAllPackets();
 
@@ -101,7 +100,7 @@ void Client::sendPacket()
             // Send event packets if any
             if (!eventPackets.empty())
             {
-                //sendSpecificPacket(eventPackets, PacketType::Game_EventClient);
+                sendSpecificPacket(eventPackets, PacketType::Game_EventClient);
             }
         }
 
@@ -213,7 +212,6 @@ void Client::sendSpecificPacket(const std::vector<uint32_t>& packets, PacketType
     {
         pkt << packets[i];
     }
-
     // Add the size of the packets and the client ID to the packet
     pkt << packets.size();
     pkt << clientID;
