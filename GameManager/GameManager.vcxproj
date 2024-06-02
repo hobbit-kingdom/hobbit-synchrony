@@ -137,7 +137,6 @@
     <ClInclude Include="NPC.h" />
     <ClInclude Include="OtherPlayer.h" />
     <ClInclude Include="PodnitiiPredmet.h" />
-    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClientEntity.cpp" />
