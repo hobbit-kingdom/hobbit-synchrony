@@ -89,7 +89,7 @@ void Client::sendPacket()
             // Prepare the packets
             std::vector<uint32_t> snapshotPackets;
             std::vector<uint32_t> eventPackets;
-            GameManager::writePacket(snapshotPackets, eventPackets);
+            GameClientManager::writePacket(snapshotPackets, eventPackets);
 
             // Send snapshot packets if any
             if (!snapshotPackets.empty())
@@ -176,7 +176,7 @@ void Client::processEachPacket(const std::vector<std::vector<uint32_t>>& allPack
         packet.pop_back();
 
         // Read the packet
-        GameManager::readPacket(packet, clientIndex);
+        GameClientManager::readPacket(packet, clientIndex);
     }
 }
 

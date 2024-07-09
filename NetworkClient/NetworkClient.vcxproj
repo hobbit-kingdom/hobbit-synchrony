@@ -136,6 +136,9 @@
     <ClCompile Include="ClientConnection.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GameClientManager\GameClientManager.vcxproj">
+      <Project>{6a54f0a9-5ec5-4b87-9306-a30b7bcb9195}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\GameManager\GameManager.vcxproj">
       <Project>{2aee685e-8a65-4245-ad4d-f085377891b9}</Project>
     </ProjectReference>

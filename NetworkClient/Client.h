@@ -8,13 +8,14 @@
 // Project-specific headers
 #include "../NetworkManager/client_interface.h"  // Packet types for network communication
 #include "../GameManager/GameManager.h"    // Game management functionality
+#include "../GameClientManager/GameClientManager.h"    // Game management functionality
 #include "ClientConnection.h"              // Client connection handling
 
 // The Client class inherits from the client_interface class template
 class Client : public net::client_interface<PacketType>
 {
 private:
-    GameManager gameManager = GameManager();
+    GameClientManager gameClientManager = GameClientManager();
 
     uint32_t clientID = 0;  // Unique identifier for the client
 

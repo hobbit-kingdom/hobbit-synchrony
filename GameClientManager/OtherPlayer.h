@@ -1,9 +1,9 @@
 #pragma once
-#include "MemoryAccess.h"
+#include "../GameManager/MemoryAccess.h"
 #include "GamePacket.h"
 #include "ClientEntity.h"
 
-#include "NPC.h"
+#include "../GameManager/NPC.h"
 
 #include <vector>
 #include <cstdint>

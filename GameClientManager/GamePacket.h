@@ -18,7 +18,7 @@ public:
 	static const uint32_t PACKET_FlAG = 0xffffffff;
 
 	GamePacket(ReadType newRecieverType, std::vector<uint32_t> recieverIndex, std::vector<uint32_t> packet, uint32_t newPacketType)
-		: packetReadType(newRecieverType), readersIndexes(recieverIndex), gameData(packet), packetType(newPacketType){}
+		: packetReadType(newRecieverType), readersIndexes(recieverIndex), gameData(packet), packetType(newPacketType) {}
 	GamePacket(ReadType newRecieverType, uint32_t recieverIndex, std::vector<uint32_t> packet) : packetReadType(newRecieverType)
 	{
 		readersIndexes.push_back(recieverIndex);
@@ -39,9 +39,9 @@ public:
 		readersIndexes.push_back(recieverIndex);
 	}
 
-	GamePacket(){}
+	GamePacket() {}
 
-	
+
 	void pushBackReader(uint32_t readerIndex)
 	{
 		readersIndexes.push_back(readerIndex);
@@ -76,8 +76,8 @@ public:
 	{
 		return gameData.size();
 	}
-	
-	
+
+
 	// size of the whole packet
 	// includes type, size, and flags when needed
 	uint32_t getPacketSize()
@@ -111,12 +111,12 @@ public:
 		}
 
 		finalPacket.push_back(uint32_t(packetReadType));
-		
-		
+
+
 		// set recievers indexes
 		if (readersIndexes.size() > 1)
 			finalPacket.push_back(PACKET_FlAG);
-		
+
 		finalPacket.insert(finalPacket.end(), readersIndexes.begin(), readersIndexes.end());
 
 		if (readersIndexes.size() > 1)
@@ -223,7 +223,7 @@ public:
 			// packet size
 			packetSize = packets.front();
 			packets.erase(packets.begin());
-			
+
 			// remove the processed packets
 			packets.erase(packets.begin(), packets.begin() + packetSize);
 		}

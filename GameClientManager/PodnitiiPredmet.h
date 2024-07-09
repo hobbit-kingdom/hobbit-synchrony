@@ -1,7 +1,7 @@
 #pragma once
 #include "ClientEntity.h"
-#include "MemoryAccess.h"
-#include "HobbitMemoryAccess.h"
+#include "../GameManager/MemoryAccess.h"
+#include "../GameManager/HobbitMemoryAccess.h"
 #include "GamePacket.h"
 
 #include <vector>

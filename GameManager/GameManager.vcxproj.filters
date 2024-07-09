@@ -27,26 +27,8 @@
     <ClInclude Include="MemoryAccess.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GamePacket.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClientEntity.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="LevelEntity.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="MainPlayer.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="OtherPlayer.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
     <ClInclude Include="HobbitMemoryAccess.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PodnitiiPredmet.h">
-      <Filter>ClientEntity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -59,26 +41,8 @@
     <ClCompile Include="GameManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GamePacket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClientEntity.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
-    <ClCompile Include="LevelEntity.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
-    <ClCompile Include="MainPlayer.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
-    <ClCompile Include="OtherPlayer.cpp">
-      <Filter>ClientEntity</Filter>
-    </ClCompile>
     <ClCompile Include="HobbitMemoryAccess.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PodnitiiPredmet.cpp">
-      <Filter>ClientEntity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

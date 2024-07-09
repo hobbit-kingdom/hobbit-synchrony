@@ -1,5 +1,5 @@
 #pragma once
-#include "HobbitMemoryAccess.h"
+#include "../GameManager/HobbitMemoryAccess.h"
 #include "GamePacket.h"
 #include "ClientEntity.h"
 
