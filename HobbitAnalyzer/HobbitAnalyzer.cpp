@@ -95,13 +95,14 @@ int main()
     char input = 0;
     do
     {
+
         std::cout << std::endl << "MAIN MENU" << std::endl;
         std::cout << "[1] Object address by data" << std::endl;
         std::cout << "[2] Display What Bilbo is looking at" << std::endl;
         std::cout << "[3] DisplayData" << std::endl;
         std::cout << "[4] Settings" << std::endl;
         std::cout << "[q] Close Program" << std::endl;
-
+        std::cin >> input;
         switch (input)
         {
         case '1':

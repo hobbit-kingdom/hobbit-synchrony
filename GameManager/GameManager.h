@@ -22,7 +22,7 @@ protected:
 
     static std::thread updateThread;
     static std::atomic<bool> stopThread;
-
+    static std::mutex guardUpdate;
     // All derived classes
     static std::vector<ClientEntity*> clientEntities;
 
@@ -108,50 +108,52 @@ protected:
         {
             // update speed
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-            // check if game open
-            isHobbitOpen = HobbitMemoryAccess::isGameOpen();
-            if (!isHobbitOpen)
             {
-                if (isHobbitOpen != wasHobbitOpen)
-                    eventCloseGame();
-                std::cout << "Waiting for HobbitTM" << std::endl;
-                wasHobbitOpen = isHobbitOpen;
-                continue;
-            }
-            if (wasHobbitOpen)
-            {
-                eventOpenGame();
-                wasHobbitOpen = isHobbitOpen;
-            }
+                std::lock_guard<std::mutex> guard(guardUpdate);
+                // check if game open
+                isHobbitOpen = HobbitMemoryAccess::isGameOpen();
+                if (!isHobbitOpen)
+                {
+                    if (isHobbitOpen != wasHobbitOpen)
+                        eventCloseGame();
+                    std::cout << "Waiting for HobbitTM" << std::endl;
+                    wasHobbitOpen = isHobbitOpen;
+                    continue;
+                }
+                if (wasHobbitOpen)
+                {
+                    eventOpenGame();
+                    wasHobbitOpen = isHobbitOpen;
+                }
 
 
-            // handle game states
-            currentState = getGameState();
+                // handle game states
+                currentState = getGameState();
 
-            // level loaded
-            currentLevelLoaded = getLevelLoaded();
-            currentLevelFullyLoaded = getLevelFullyLoaded();
+                // level loaded
+                currentLevelLoaded = getLevelLoaded();
+                currentLevelFullyLoaded = getLevelFullyLoaded();
 
-            // new level
-            if (previousLevelFullyLoaded != currentLevelFullyLoaded && currentLevelFullyLoaded)
-            {
-                eventEnterNewLevel();
-            }
-            if (previousLevelLoaded != currentLevelLoaded && !currentLevelLoaded)
-            {
-                eventExitLevel();
-            }
+                // new level
+                if (previousLevelFullyLoaded != currentLevelFullyLoaded && currentLevelFullyLoaded)
+                {
+                    eventEnterNewLevel();
+                }
+                if (previousLevelLoaded != currentLevelLoaded && !currentLevelLoaded)
+                {
+                    eventExitLevel();
+                }
 
-            previousState = currentState;
-            previousLevelLoaded = currentLevelLoaded;
-            previousLevelFullyLoaded = currentLevelFullyLoaded;
+                previousState = currentState;
+                previousLevelLoaded = currentLevelLoaded;
+                previousLevelFullyLoaded = currentLevelFullyLoaded;
 
 
-            // handle update event
-            for (ClientEntity* e : clientEntities)
-            {
-                e->update();
+                // handle update event
+                for (ClientEntity* e : clientEntities)
+                {
+                    e->update();
+                }
             }
         }
     }
@@ -172,6 +174,84 @@ public:
     static void addListenerCloseGame(const Listener& listener) {
         listenersCloseGame.push_back(listener);
     }
+
+
+    static void readPacket(std::vector<uint32_t>& packets, uint32_t playerIndex)
+    {
+        std::lock_guard<std::mutex> guard(guardUpdate);
+        if (!HobbitMemoryAccess::isGameOpen())
+            return;
+
+        // convert packets into GamePackets
+        std::vector<GamePacket> gamePackets;
+        gamePackets = GamePacket::packetsToGamePackets(packets);
+
+        // read the GamePackets
+        for (GamePacket gamePacket : gamePackets)
+        {
+            for (uint32_t reader : gamePacket.getReadersIndexes())
+            {
+                clientEntities[reader]->readPacket(gamePacket, playerIndex);
+            }
+        }
+    }
+    static void writePacket(std::vector<uint32_t>& snapshotPackets, std::vector<uint32_t>& eventPackets)
+    {
+        std::lock_guard<std::mutex> guard(guardUpdate);
+
+
+        std::vector<uint32_t> entityPackets;// entity packets
+        std::vector<GamePacket> gamePackets;// packeof the game
+        std::vector<uint32_t> processedGamePacket;
+
+        if (!HobbitMemoryAccess::isGameOpen())
+        {
+            if (snapshotPackets.empty())
+                return;
+
+            //indicate the end of packet
+            processedGamePacket = GamePacket::lastPacket();
+            snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
+            return;
+        }
+
+        // get game packet from all entities
+        GamePacket pkt;
+        std::vector<GamePacket> pkts;
+        for (ClientEntity* e : clientEntities)
+        {
+            pkts = e->writePacket();
+            for (GamePacket pkt : pkts)
+            {
+                if (pkt.getGameDataSize() != 0)
+                    gamePackets.push_back(pkt);
+            }
+            e->finishedWritePacket();
+        }
+
+        // get packet from game packet
+        for (GamePacket gamePacket : gamePackets)
+        {
+            processedGamePacket = gamePacket.getPacket();
+
+            if (processedGamePacket.front() == (uint32_t)ReadType::Game_Snapshot)
+            {
+                snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
+            }
+            else if (processedGamePacket.front() == (uint32_t)ReadType::Game_EventClient)
+            {
+                eventPackets.insert(eventPackets.end(), processedGamePacket.begin() + 1, processedGamePacket.end());
+            }
+        }
+
+        //indicate the end of packet
+        processedGamePacket = GamePacket::lastPacket();
+        if (!snapshotPackets.empty())
+            snapshotPackets.insert(snapshotPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
+        if (!eventPackets.empty())
+            eventPackets.insert(eventPackets.end(), processedGamePacket.begin(), processedGamePacket.end());
+    }
+
 
     GameManager()
     {
