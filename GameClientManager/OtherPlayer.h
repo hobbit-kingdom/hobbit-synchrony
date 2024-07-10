@@ -18,9 +18,9 @@ class OtherPlayer : public ClientEntity
 {
 
 private:
-	static std::vector<uint32_t> GUIDs;
-	static std::vector<NPC> otherPlayers;
-	static std::atomic<bool> processPackets;
+	std::vector<uint32_t> GUIDs;
+	std::vector<NPC> otherPlayers;
+	std::atomic<bool> processPackets;
 	uint32_t hexStringToUint32(const std::string& hexString) {
 		uint32_t result;
 		std::stringstream ss;
@@ -44,14 +44,18 @@ public:
 				filePath = input;
 			}
 		}
+
+		std::vector<uint32_t> tempGUID;
 		std::string line;
 		while (std::getline(file, line)) {
 			size_t pos = line.find('_');
 			if (pos != std::string::npos && pos + 1 < line.size()) {
 				std::string secondPart = line.substr(pos + 1);
-				GUIDs.push_back(hexStringToUint32(secondPart));
+				uint32_t a = hexStringToUint32(secondPart);
+				tempGUID.push_back(a);
 			}
 		}
+		GUIDs = tempGUID;
 		std::cout << "FOUND FILE!" << std::endl;
 	}
 
