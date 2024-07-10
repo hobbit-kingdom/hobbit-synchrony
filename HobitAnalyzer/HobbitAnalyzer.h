@@ -111,7 +111,7 @@ private:
         while (!exitWatchingAtLoop) {
             uint32_t activatedAddress = HobbitMemoryAccess::memoryAccess.readData(0x00773BD0);
             uint32_t foundObject1 = HobbitMemoryAccess::findObjectAddressByGUID(activatedAddress);
-
+            
             // make it pickup
             // HobbitMemoryAccess::memoryAccess.writeData(foundObject1 + 0x10, 0x02001122);
 
