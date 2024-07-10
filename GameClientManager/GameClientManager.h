@@ -4,16 +4,12 @@
 
 #include "GamePacket.h"
 #include "ClientEntity.h"
-
-#include "MainPlayer.h"
-#include "OtherPlayer.h"
-#include "LevelEntity.h"
-#include "PodnitiiPredmet.h"
+#include "ClientEntitiesList.h"
 
 class GameClientManager : public GameManager
 {
 protected:
-    static std::vector<ClientEntity*> clientEntities;
+    static ClientEnitiesList clientEnitiesList;
 public:
     GameClientManager ();
 
@@ -31,7 +27,7 @@ public:
         {
             for (uint32_t reader : gamePacket.getReadersIndexes())
             {
-                clientEntities[reader]->readPacket(gamePacket, playerIndex);
+                clientEnitiesList.clientEntities[reader]->readPacket(gamePacket, playerIndex);
             }
         }
     }
@@ -55,7 +51,7 @@ public:
         // get game packet from all entities
         GamePacket pkt;
         std::vector<GamePacket> pkts;
-        for (ClientEntity* e : clientEntities)
+        for (ClientEntity* e : clientEnitiesList.clientEntities)
         {
             pkts = e->writePacket();
             for (GamePacket pkt : pkts)

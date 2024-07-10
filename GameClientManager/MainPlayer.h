@@ -2,6 +2,7 @@
 #include "../GameManager/HobbitMemoryAccess.h"
 #include "GamePacket.h"
 #include "ClientEntity.h"
+#include "EntitiesEnum.h"
 
 #include <vector>
 #include <cstdint>
@@ -38,7 +39,7 @@ public:
         uint32_t animBilbo = HobbitMemoryAccess::memoryAccess.readData(bilboAnimPTR);
 
         // Set the packet
-        GamePacket gamePacket(ReadType::Game_Snapshot, 0x1, 0x1);// first read Type, second is reader, third is type 
+        GamePacket gamePacket(ReadType::Game_Snapshot, uint32_t(Entities::OtherPlayer));// first read Type, second is reader 
 
         gamePacket.pushBackGamePacket(uintPosX);
         gamePacket.pushBackGamePacket(uintPosY);
@@ -56,8 +57,10 @@ public:
         std::cout << "A: " << animBilbo << std::endl << std::endl;
         std::cout << "\033[0m";
         
+
+        //second packet
         gamePackets.push_back(gamePacket);
-        GamePacket gamePacket1(ReadType::Game_Snapshot, 0x3, 0x1);
+        GamePacket gamePacket1(ReadType::Game_Snapshot, uint32_t(Entities::PodnitiiPredmet));// first read Type, second is reader 
         if (animBilbo == 84)
         {
             uint32_t activatedAddress = HobbitMemoryAccess::memoryAccess.readData(0x007735B0);

@@ -2,6 +2,7 @@
 #include "../GameManager/MemoryAccess.h"
 #include "GamePacket.h"
 #include "ClientEntity.h"
+#include "EntitiesEnum.h"
 
 #include "../GameManager/NPC.h"
 
@@ -57,9 +58,6 @@ public:
 	// packages
 	void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
 	{
-		// Check type
-		if (gamePacket.getPacketType() != 0x1)
-			return;
 		// Check size
 		if (gamePacket.getGameDataSize() == 0)
 			return;

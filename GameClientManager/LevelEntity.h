@@ -3,6 +3,7 @@
 #include "../GameManager/MemoryAccess.h"
 #include "../GameManager/HobbitMemoryAccess.h"
 #include "GamePacket.h"
+#include "EntitiesEnum.h"
 
 #include <vector>
 #include <cstdint>
@@ -23,9 +24,6 @@ public:
     // packages
     void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
     {
-        // Check type
-        if (gamePacket.getPacketType() != 0x1)
-            return;
         // Check size
         if (gamePacket.getGameDataSize() == 0)
             return;
@@ -60,7 +58,7 @@ public:
         std::vector<GamePacket> gamePackets;
         if (!isSentExitLevel)
         {
-            GamePacket gamePacket(ReadType::Game_EventClient, 0x2, 0x1);// first read Type, second is reader, third is type 
+            GamePacket gamePacket(ReadType::Game_Snapshot, uint32_t(Entities::LevelEntity));// first read Type, second is reader 
 
             uint32_t currentLevel = HobbitMemoryAccess::memoryAccess.readData(0x7C4);
             gamePacket.pushBackGamePacket(currentLevel);

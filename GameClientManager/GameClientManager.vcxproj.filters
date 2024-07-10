@@ -36,6 +36,9 @@
     <ClInclude Include="PodnitiiPredmet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EntitiesEnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GamePacket.cpp">
@@ -58,6 +61,9 @@
     </ClCompile>
     <ClCompile Include="GameClientManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientEntitiesList.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

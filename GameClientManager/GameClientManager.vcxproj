@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClientEntity.h" />
+    <ClInclude Include="EntitiesEnum.h" />
     <ClInclude Include="GameClientManager.h" />
     <ClInclude Include="GamePacket.h" />
     <ClInclude Include="LevelEntity.h" />
@@ -28,6 +29,7 @@
     <ClInclude Include="PodnitiiPredmet.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ClientEntitiesList.h" />
     <ClCompile Include="ClientEntity.cpp" />
     <ClCompile Include="GameClientManager.cpp" />
     <ClCompile Include="GamePacket.cpp" />

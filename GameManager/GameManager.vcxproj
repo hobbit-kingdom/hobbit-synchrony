@@ -138,9 +138,6 @@
     <ClCompile Include="MemoryAccess.cpp" />
     <ClCompile Include="NPC.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="FAKE_BILBO_GUID.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

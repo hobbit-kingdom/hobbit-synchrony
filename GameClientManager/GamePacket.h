@@ -7,6 +7,7 @@ enum class ReadType : uint32_t
 	Game_EventClient,
 	Game_Temporary
 };
+
 class GamePacket
 {
 	ReadType packetReadType;
@@ -38,7 +39,11 @@ public:
 	{
 		readersIndexes.push_back(recieverIndex);
 	}
-
+	GamePacket(ReadType newRecieverType, uint32_t recieverIndex) : packetReadType(newRecieverType)
+	{
+		readersIndexes.push_back(recieverIndex);
+		packetType = 0x0;
+	}
 	GamePacket() {}
 
 

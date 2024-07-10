@@ -1,14 +1,11 @@
 #include "GameClientManager.h"
-std::vector<ClientEntity*> GameClientManager::clientEntities;
+ClientEnitiesList GameClientManager::clientEnitiesList;
 std::vector<std::function<void()>> GameManager::listenersUpdate;
 
 GameClientManager::GameClientManager() {
-    clientEntities.push_back(new MainPlayer());
-    clientEntities.push_back(new OtherPlayer());
-    clientEntities.push_back(new LevelEntity());
-    clientEntities.push_back(new PodnitiiPredmet());
+    
 
-    for (ClientEntity* e : clientEntities)
+    for (ClientEntity* e : clientEnitiesList.clientEntities)
     {
         addListenerEnterNewLevel([e]() { e->enterNewLevel(); });
         addListenerExitLevel([e]() { e->exitLevel(); }); // assuming exitLevel is a method of ClientEntity

@@ -3,6 +3,7 @@
 #include "../GameManager/MemoryAccess.h"
 #include "../GameManager/HobbitMemoryAccess.h"
 #include "GamePacket.h"
+#include "EntitiesEnum.h"
 
 #include <vector>
 #include <cstdint>
@@ -19,9 +20,6 @@ public:
     // packages
 	void readPacket(GamePacket gamePacket, uint32_t playerIndex) override
 	{
-		// Check type
-		if (gamePacket.getPacketType() != 0x1)
-			return;
 		// Check size
 		if (gamePacket.getGameDataSize() == 0)
 			return;
