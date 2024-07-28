@@ -31,7 +31,8 @@ void modifyFile(const fs::path& filePath) {
 			});
 
 		if (it != lines.end()) {
-			std::cout << "File alrready has FAKE_HOBBITS";
+			std::cout << filePath << '\n';
+			std::cout << "File alrready has FAKE_HOBBITS\n";
 			file.close();
 			return;
 		}
