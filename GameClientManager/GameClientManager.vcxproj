@@ -18,22 +18,49 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AllNPC.h" />
+    <ClInclude Include="ClientEntity.h" />
+    <ClInclude Include="EntitiesEnum.h" />
+    <ClInclude Include="GameClientManager.h" />
+    <ClInclude Include="GamePacket.h" />
+    <ClInclude Include="LevelEntity.h" />
+    <ClInclude Include="MainPlayer.h" />
+    <ClInclude Include="OtherPlayer.h" />
+    <ClInclude Include="PodnitiiPredmet.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AllNPC.cpp" />
+    <ClCompile Include="ClientEntitiesList.h" />
+    <ClCompile Include="ClientEntity.cpp" />
+    <ClCompile Include="GameClientManager.cpp" />
+    <ClCompile Include="GamePacket.cpp" />
+    <ClCompile Include="LevelEntity.cpp" />
+    <ClCompile Include="MainPlayer.cpp" />
+    <ClCompile Include="OtherPlayer.cpp" />
+    <ClCompile Include="PodnitiiPredmet.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GameManager\GameManager.vcxproj">
+      <Project>{2aee685e-8a65-4245-ad4d-f085377891b9}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9f1ca1ca-fada-4021-9d34-aea818142cc2}</ProjectGuid>
-    <RootNamespace>NetworkClient</RootNamespace>
+    <ProjectGuid>{6a54f0a9-5ec5-4b87-9306-a30b7bcb9195}</ProjectGuid>
+    <RootNamespace>GameClientManager</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -76,7 +103,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -91,7 +117,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,7 +131,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,7 +145,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,26 +153,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Client.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="ClientConnection.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GameClientManager\GameClientManager.vcxproj">
-      <Project>{6a54f0a9-5ec5-4b87-9306-a30b7bcb9195}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\GameManager\GameManager.vcxproj">
-      <Project>{2aee685e-8a65-4245-ad4d-f085377891b9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\NetworkManager\NetworkManager.vcxproj">
-      <Project>{8cb81598-8725-4495-8dff-690c6c59f7a1}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Client.h" />
-    <ClInclude Include="ClientConnection.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

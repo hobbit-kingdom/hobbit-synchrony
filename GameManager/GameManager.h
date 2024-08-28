@@ -1,16 +1,8 @@
 #pragma once
 #include "HobbitMemoryAccess.h"
-#include "GamePacket.h"
-#include "ClientEntity.h"
 
-#include "MainPlayer.h"
-#include "OtherPlayer.h"
-#include "LevelEntity.h"
-#include "PodnitiiPredmet.h"
 #include <vector>
 #include <mutex>
-//0x00760864: loading layers
-
 #include <iomanip>
 #include <functional>
 
@@ -22,9 +14,7 @@ protected:
 
     static std::thread updateThread;
     static std::atomic<bool> stopThread;
-
     // All derived classes
-    static std::vector<ClientEntity*> clientEntities;
 
     // events
     static std::vector<Listener> listenersEnterNewLevel;
@@ -86,7 +76,6 @@ protected:
         return HobbitMemoryAccess::memoryAccess.readData(0x00762B5C);        
     }
 
-
     static void start()
     {
         HobbitMemoryAccess::setHobbitMemoryAccess();
@@ -108,50 +97,46 @@ protected:
         {
             // update speed
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-            // check if game open
-            isHobbitOpen = HobbitMemoryAccess::isGameOpen();
-            if (!isHobbitOpen)
             {
-                if (isHobbitOpen != wasHobbitOpen)
-                    eventCloseGame();
-                std::cout << "Waiting for HobbitTM" << std::endl;
-                wasHobbitOpen = isHobbitOpen;
-                continue;
-            }
-            if (wasHobbitOpen)
-            {
-                eventOpenGame();
-                wasHobbitOpen = isHobbitOpen;
-            }
+                // check if game open
+                isHobbitOpen = HobbitMemoryAccess::isGameOpen();
+                if (!isHobbitOpen)
+                {
+                    if (isHobbitOpen != wasHobbitOpen)
+                        eventCloseGame();
+                    std::cout << "Waiting for HobbitTM" << std::endl;
+                    wasHobbitOpen = isHobbitOpen;
+                    continue;
+                }
+                if (wasHobbitOpen)
+                {
+                    eventOpenGame();
+                    wasHobbitOpen = isHobbitOpen;
+                }
 
 
-            // handle game states
-            currentState = getGameState();
+                // handle game states
+                currentState = getGameState();
 
-            // level loaded
-            currentLevelLoaded = getLevelLoaded();
-            currentLevelFullyLoaded = getLevelFullyLoaded();
+                // level loaded
+                currentLevelLoaded = getLevelLoaded();
+                currentLevelFullyLoaded = getLevelFullyLoaded();
 
-            // new level
-            if (previousLevelFullyLoaded != currentLevelFullyLoaded && currentLevelFullyLoaded)
-            {
-                eventEnterNewLevel();
-            }
-            if (previousLevelLoaded != currentLevelLoaded && !currentLevelLoaded)
-            {
-                eventExitLevel();
-            }
+                // new level
+                if (previousLevelFullyLoaded != currentLevelFullyLoaded && currentLevelFullyLoaded)
+                {
+                    eventEnterNewLevel();
+                }
+                if (previousLevelLoaded != currentLevelLoaded && !currentLevelLoaded)
+                {
+                    eventExitLevel();
+                }
 
-            previousState = currentState;
-            previousLevelLoaded = currentLevelLoaded;
-            previousLevelFullyLoaded = currentLevelFullyLoaded;
-
-
-            // handle update event
-            for (ClientEntity* e : clientEntities)
-            {
-                e->update();
+                //update Event
+                //[TO DO]
+                previousState = currentState;
+                previousLevelLoaded = currentLevelLoaded;
+                previousLevelFullyLoaded = currentLevelFullyLoaded;
             }
         }
     }
@@ -172,6 +157,7 @@ public:
     static void addListenerCloseGame(const Listener& listener) {
         listenersCloseGame.push_back(listener);
     }
+
 
     GameManager()
     {

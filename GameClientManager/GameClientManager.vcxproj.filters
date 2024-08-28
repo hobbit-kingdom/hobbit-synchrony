@@ -13,57 +13,63 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ClientEntity">
-      <UniqueIdentifier>{4d72f520-6ce3-4d88-aa96-c1d291d46e30}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameManager.h">
+    <ClInclude Include="GameClientManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MemoryAccess.h">
+    <ClInclude Include="GamePacket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HobbitMemoryAccess.h">
+    <ClInclude Include="ClientEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelEntity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherPlayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PodnitiiPredmet.h">
-      <Filter>ClientEntity</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntitiesEnum.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AllNPC.h">
-      <Filter>ClientEntity</Filter>
-    </ClInclude>
-    <ClInclude Include="NPC.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HobbitProcessAnalyzer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProcessAnalyzer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProcessAnalyzerTypeWrapped.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NPC.cpp">
+    <ClCompile Include="GamePacket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryAccess.cpp">
+    <ClCompile Include="ClientEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameManager.cpp">
+    <ClCompile Include="LevelEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HobbitMemoryAccess.cpp">
+    <ClCompile Include="MainPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PodnitiiPredmet.cpp">
-      <Filter>ClientEntity</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameClientManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientEntitiesList.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="AllNPC.cpp">
-      <Filter>ClientEntity</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
