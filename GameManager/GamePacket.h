@@ -39,7 +39,7 @@ public:
 		readersIndexes.push_back(recieverIndex);
 	}
 
-	GamePacket(){}
+	//GamePacket(){}
 
 	
 	void pushBackReader(uint32_t readerIndex)

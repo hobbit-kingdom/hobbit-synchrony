@@ -94,7 +94,7 @@ public:
 		std::cout << "PredmetZ: " << PredmetZ << std::endl;
 		std::cout << "\033[0m";
 	}
-	std::vector<GamePacket> writePacket() const override
+	/*std::vector<GamePacket> writePacket() const override
 	{
 		if (!processPackets)
 			return std::vector<GamePacket>();
@@ -102,7 +102,7 @@ public:
 		// sets packets to send
 		return std::vector<GamePacket>();
 	}
-
+	*/
     // game events
     void update() override
     {

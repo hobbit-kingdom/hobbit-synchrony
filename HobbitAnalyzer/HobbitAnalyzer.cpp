@@ -6,7 +6,9 @@
 #include <algorithm>
 #include "../GameManager/GameManager.h"
 #include "../GameManager/HobbitMemoryAccess.h"
-
+#include "../GameManager/HobbitProcessAnalyzer.h"
+#include "../GameManager/ProcessAnalyzer.h"
+#include "../GameManager/ProcessAnalyzerTypeWrapped.h"
 
 #include <iostream>
 #include <thread>
@@ -87,43 +89,46 @@ void displayMenuSettings()
     }while(input != 'a');
 
 }
+uint32_t hexStringToUint32(const std::string& hexStr) {
+    uint32_t address;
+    std::stringstream ss;
 
+    // Remove the "0x" prefix if present
+    if (hexStr.substr(0, 2) == "0x") {
+        ss << std::hex << hexStr.substr(2);
+    }
+    else {
+        ss << std::hex << hexStr;
+    }
 
-int main()
-{
-    GameManager gameManager;
-    char input = 0;
-    do
-    {
-        std::cout << std::endl << "MAIN MENU" << std::endl;
-        std::cout << "[1] Object address by data" << std::endl;
-        std::cout << "[2] Display What Bilbo is looking at" << std::endl;
-        std::cout << "[3] DisplayData" << std::endl;
-        std::cout << "[4] Settings" << std::endl;
-        std::cout << "[q] Close Program" << std::endl;
+    ss >> address;
 
-        switch (input)
-        {
-        case '1':
-            displayObjectsAddressByData();
-            break;
-        case '2':
-            displayObjectAddressBibloWatchingAt();
-            break;
-        case '3':
-            displayStackAddress();
-            break;
-        case 's':
-            displayMenuSettings();
-            break;
-        case 'q':
-            std::cout << "Closing program" << std::endl;
-            break;
+    // Check for conversion errors
+    if (ss.fail() || !ss.eof()) {
+        throw std::invalid_argument("Invalid hexadecimal string.");
+    }
+
+    return address;
+}
+
+int main() {
+    std::string hexAddress;
+    ProcessAnalyzerTypeWrapped patw;
+    std::vector<uint32_t> NPC = patw.searchProcessMemory(patw.getProcess("Meridian.exe"), 0x3101001C);
+    for (uint32_t e : NPC) {
+        std::cout << std::hex << e-29*4 << std::endl;
+    }
+   /* try {
+        uint32_t address = hexStringToUint32(hexAddress);
+
+        // Ensure the address fits in a uint32_t (0 to 2^32 - 1)
+        if (address < 0 || address > 0xFFFFFFFF) {
+            throw std::out_of_range("Address must be in the range of a uint32_t (0 to 4294967295).");
         }
 
-    } while (input != 'q');
-
-    
-
-    return 0;
+        // Call the Process function with the address
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Invalid input: " << e.what() << std::endl;
+    }*/
 }

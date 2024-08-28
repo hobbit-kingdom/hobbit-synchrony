@@ -2,6 +2,9 @@
 #include "HobbitMemoryAccess.h"
 #include "GamePacket.h"
 #include "ClientEntity.h"
+#include "HobbitProcessAnalyzer.h"
+#include "ProcessAnalyzer.h"
+#include "ProcessAnalyzerTypeWrapped.h"
 
 #include <vector>
 #include <cstdint>
@@ -15,6 +18,7 @@ private:
     static uint32_t bilboAnimPTR;
     static const uint32_t X_POSITION_PTR;
     static std::atomic<bool> processPackets;
+    
 public:
 
     // packages
@@ -29,7 +33,7 @@ public:
         if (!processPackets)
             return std::vector<GamePacket>();
         std::vector<GamePacket> gamePackets;
-
+        
         // Prepares packets to send
         uint32_t uintPosX = HobbitMemoryAccess::memoryAccess.readData(0x7C4 + bilboPosXPTR);
         uint32_t uintPosY = HobbitMemoryAccess::memoryAccess.readData(0x7C8 + bilboPosXPTR);
@@ -55,9 +59,16 @@ public:
         std::cout << "R: " << HobbitMemoryAccess::memoryAccess.uint32ToFloat(uintRotY) << " || ";
         std::cout << "A: " << animBilbo << std::endl << std::endl;
         std::cout << "\033[0m";
-        
+        ProcessAnalyzerTypeWrapped patw;
         gamePackets.push_back(gamePacket);
-        GamePacket gamePacket1(ReadType::Game_Snapshot, 0x3, 0x1);
+        GamePacket gamePacket1(ReadType::Game_Snapshot, 0x4, 0x1);
+        GamePacket gamePacketNPC(ReadType::Game_Snapshot, 0x3, 0x1);
+        std::vector<uint32_t> NPC = patw.searchProcessMemory(patw.getProcess("Meridian.exe"), 0x3101001C);
+        for (uint32_t e : NPC) {
+            gamePacketNPC.pushBackGamePacket(HobbitMemoryAccess::memoryAccess.readData(e - 29 * 4));
+            gamePacketNPC.pushBackGamePacket(HobbitMemoryAccess::memoryAccess.readData(e + 536));
+        }
+        //std::vector<uint32_t> NPC = ProcessAnalyzerTypeWrapped::searchProcessMemory(ProcessAnalyzer::getProcess("Meridian.exe") , 0x3101001C);
         if (animBilbo == 84)
         {
             uint32_t activatedAddress = HobbitMemoryAccess::memoryAccess.readData(0x007735B0);
@@ -98,6 +109,8 @@ public:
             gamePacket1.pushBackGamePacket(XZCHTO);
         }
         gamePackets.push_back(gamePacket1);
+
+
         return gamePackets;
     }
 

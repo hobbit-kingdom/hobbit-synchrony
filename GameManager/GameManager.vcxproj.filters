@@ -18,9 +18,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NPC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -47,6 +44,21 @@
     </ClInclude>
     <ClInclude Include="PodnitiiPredmet.h">
       <Filter>ClientEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="AllNPC.h">
+      <Filter>ClientEntity</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC.h">
+      <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HobbitProcessAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessAnalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProcessAnalyzerTypeWrapped.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PodnitiiPredmet.cpp">
+      <Filter>ClientEntity</Filter>
+    </ClCompile>
+    <ClCompile Include="AllNPC.cpp">
       <Filter>ClientEntity</Filter>
     </ClCompile>
   </ItemGroup>

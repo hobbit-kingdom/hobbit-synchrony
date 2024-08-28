@@ -127,18 +127,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AllNPC.h" />
     <ClInclude Include="ClientEntity.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GamePacket.h" />
     <ClInclude Include="HobbitMemoryAccess.h" />
+    <ClInclude Include="HobbitProcessAnalyzer.h" />
     <ClInclude Include="LevelEntity.h" />
     <ClInclude Include="MainPlayer.h" />
     <ClInclude Include="MemoryAccess.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="OtherPlayer.h" />
     <ClInclude Include="PodnitiiPredmet.h" />
+    <ClInclude Include="ProcessAnalyzer.h" />
+    <ClInclude Include="ProcessAnalyzerTypeWrapped.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AllNPC.cpp" />
     <ClCompile Include="ClientEntity.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GamePacket.cpp" />
