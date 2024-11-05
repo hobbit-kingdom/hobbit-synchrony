@@ -32,7 +32,7 @@ void modifyFile(const fs::path& filePath) {
 
 		if (it != lines.end()) {
 			std::cout << filePath << '\n';
-			std::cout << "File alrready has FAKE_HOBBITS\n";
+			std::cout << "File already has FAKE_HOBBITS\n";
 			file.close();
 			return;
 		}
@@ -57,7 +57,7 @@ void modifyFile(const fs::path& filePath) {
 
 int main() {
 	const std::string levelsFolder = "../Levels";
-	const std::vector<std::string> filesToCopy = { "FAKE_HOBBITS.EXPORT", "BILBOFAKE.NPCGEOM", "BILBC[D].XBMP" };
+	const std::vector<std::string> filesToCopy = { "FAKE_HOBBITS.EXPORT", "BILBOFAKE.NPCGEOM", "BILBC[D].XBMP", "HAIR[D].XBMP", "BILBO-EYE[D].XBMP" };
 	const std::string bilboAnimFile = "BILBORMANIMS.CHARANIM";
 
 	for (const auto& entry : fs::directory_iterator(levelsFolder)) {
